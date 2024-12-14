@@ -1,20 +1,20 @@
-version: '3.7'
 services:
   web:
     build: .
     container_name: web
     restart: always
     ports:
-      - 8888:80
+      - 80:80
+      - 433:433
     volumes:
       - ./html:/var/www/html
   db:
-    image: mariadb:latest
+    image: mariadb:10.5.6
     container_name: db
     restart: always
     volumes:
       - wordpress_db:/var/lib/mysql
     environment:
-      - MYSQL_ROOT_PASSWORD=AnythingYouDLike
+      - MYSQL_ROOT_PASSWORD=Gc4H2msNvV9JA4ALua
 volumes:
   wordpress_db: {}
