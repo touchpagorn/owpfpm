@@ -139,7 +139,7 @@ RUN  mkdir -p /etc/nginx/ssl \
  && echo '<?php if(isset($_REQUEST["printinfo"])) phpinfo();' > /var/www/html/index.php \
  && echo '?><a href=/?printinfo>see phpinfo()</a>' >> /var/www/html/index.php 
 ADD  ./start.sh /start.sh
-COPY ./nginx.conf ${NGINX_CONF}/nginx.conf
+COPY ./config/nginx.conf ${NGINX_CONF}/nginx.conf
 COPY ./www.conf /usr/local/etc/php-fpm.d/www.conf
 RUN chmod +x /start.sh
 
