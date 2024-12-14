@@ -143,6 +143,7 @@ COPY ./config/nginx.conf ${NGINX_CONF}/nginx.conf
 COPY ./www.conf /usr/local/etc/php-fpm.d/www.conf
 RUN chmod +x /start.sh
 
+
 EXPOSE 80
 
 ENTRYPOINT ["/start.sh",""]
