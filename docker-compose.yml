@@ -21,8 +21,8 @@ services:
     container_name: promtail
     restart: always
     volumes:
-      - /var/log:/var/log
-      - ./promtail-config.yml:/etc/promtail/config.yml
+      - /log/grafana:/var/log
+      - ./config/promtail-config.yml:/etc/promtail/config.yml
     command: -config.file=/etc/promtail/config.yml
 volumes:
   wordpress_db: {}
