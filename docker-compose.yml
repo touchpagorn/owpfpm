@@ -5,7 +5,7 @@ services:
     restart: always
     ports:
       - 80:80
-      - 433:433
+      - 443:443
     volumes:
       - ./html:/var/www/html
   db:
@@ -16,5 +16,13 @@ services:
       - wordpress_db:/var/lib/mysql
     environment:
       - MYSQL_ROOT_PASSWORD=Gc4H2msNvV9JA4ALua
+  promtail:
+    image: grafana/promtail:latest
+    container_name: promtail
+    restart: always
+    volumes:
+      - /var/log:/var/log
+      - ./promtail-config.yml:/etc/promtail/config.yml
+    command: -config.file=/etc/promtail/config.yml
 volumes:
   wordpress_db: {}
