@@ -1,4 +1,4 @@
-FROM php:8.2-fpm-alpine3.21
+FROM php:8.2-fpm-alpine3.22
 
 RUN apk add --update --no-cache --virtual .ext-deps \
         libjpeg-turbo-dev \
