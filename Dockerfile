@@ -12,7 +12,6 @@ RUN apk add --update --no-cache --virtual .ext-deps \
         openssl-dev pcre-dev pcre-tools pcre \
         libmemcached zlib cyrus-sasl libmemcached-dev zlib-dev cyrus-sasl-dev \
         libzip-dev imagemagick-dev \
-        libjpeg-turbo-dev libjpeg libjpeg-turbo \
         icu-dev
 
 RUN docker-php-ext-configure gd \
@@ -81,9 +80,8 @@ RUN echo "==> Installing dependencies..." \
  && ln -sf $OPENRESTY_PREFIX/bin/resty /usr/local/bin/resty \
  && ln -sf $OPENRESTY_PREFIX/luajit/bin/luajit $OPENRESTY_PREFIX/luajit/bin/lua \
  && ln -sf $OPENRESTY_PREFIX/luajit/bin/luajit /usr/local/bin/lua \
- && apk del build-deps tzdata \
+ && apk del build-deps \
  && apk add --no-cache bash \
- && apk update && apk upgrade \
  && apk add libpcrecpp libpcre16 libpcre32 openssl libssl3 pcre libgcc libstdc++ libuuid curl imagemagick ghostscript \
  && rm -rf /var/cache/apk/* \
  && rm -rf /root/ngx_openresty \
