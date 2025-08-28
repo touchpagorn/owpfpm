@@ -15,6 +15,7 @@ fi
 echo "Download latest WordPress..."
 wget -O - https://wordpress.org/latest.tar.gz | tar zxv
 mv wordpress html
+cp config/source/index.html html/index.html
 
 echo "Create a WordPress service."
 docker compose up -d
