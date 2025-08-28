@@ -12,6 +12,8 @@ services:
       - ./config/ssl/private.key:/opt/openresty/nginx/conf/ssl/private.key
       - ./config/php.ini:/usr/local/etc/php/php.ini
       - ./config/nginx.conf:/opt/openresty/nginx/conf/nginx.conf
+      - ./config/security_headers.conf:/opt/openresty/nginx/conf/security_headers.conf
+      - ./config/ssl_common.conf:/opt/openresty/nginx/conf/ssl_common.conf
 
   db:
     image: bitnami/mariadb:11.8.2
