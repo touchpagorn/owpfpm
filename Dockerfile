@@ -1,4 +1,4 @@
-FROM php:8.2-fpm-alpine3.22
+FROM php:8.3-fpm-alpine3.22
 RUN sed -i 's/dl-cdn.alpinelinux.org/dl-2.alpinelinux.org/g' /etc/apk/repositories
 RUN apk add --update --no-cache --virtual .ext-deps \
         libjpeg-turbo-dev \
