@@ -4,30 +4,36 @@ FROM debian:bookworm-slim AS openresty-builder
 ARG OPENRESTY_VERSION=1.21.4.1
 ENV OPENRESTY_PREFIX=/opt/openresty
 
+# Install build dependencies, download, compile, and clean up in a single RUN command
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential curl wget ca-certificates \
-    libpcre3-dev libssl-dev zlib1g-dev libreadline-dev libncurses-dev perl \
- && mkdir -p /root/ngx_openresty \
- && cd /root/ngx_openresty \
- && curl -sSL http://labs.frickle.com/files/ngx_cache_purge-2.3.tar.gz | tar -zxv \
- && curl -sSL http://openresty.org/download/openresty-${OPENRESTY_VERSION}.tar.gz | tar -xvz \
- && cd openresty-* \
- && ./configure \
-    --prefix=$OPENRESTY_PREFIX \
-    --add-module=/root/ngx_openresty/ngx_cache_purge-2.3 \
-    --with-luajit \
-    --with-pcre-jit \
-    --with-ipv6 \
-    --with-http_stub_status_module \
-    --with-http_ssl_module \
-    --with-http_flv_module \
-    --with-http_v2_module \
-    --with-http_mp4_module \
-    --with-http_sub_module \
-    --without-http_ssi_module \
-    --without-http_uwsgi_module \
-    --without-http_scgi_module \
- && make -j"$(nproc)" && make install
+        build-essential curl wget ca-certificates \
+        libpcre3-dev libssl-dev zlib1g-dev libreadline-dev libncurses-dev perl \
+    && mkdir -p /root/ngx_openresty \
+    && cd /root/ngx_openresty \
+    && wget -O ngx_cache_purge.tar.gz https://github.com/FRiCKLE/ngx_cache_purge/archive/2.3.tar.gz \
+    && wget -O openresty.tar.gz https://openresty.org/download/openresty-${OPENRESTY_VERSION}.tar.gz \
+    && tar -zxvf ngx_cache_purge.tar.gz \
+    && tar -xzvf openresty.tar.gz \
+    && cd openresty-${OPENRESTY_VERSION} \
+    && ./configure \
+        --prefix=$OPENRESTY_PREFIX \
+        --add-module=/root/ngx_openresty/ngx_cache_purge-2.3 \
+        --with-luajit \
+        --with-pcre-jit \
+        --with-ipv6 \
+        --with-http_stub_status_module \
+        --with-http_ssl_module \
+        --with-http_flv_module \
+        --with-http_v2_module \
+        --with-http_mp4_module \
+        --with-http_sub_module \
+        --without-http_ssi_module \
+        --without-http_uwsgi_module \
+        --without-http_scgi_module \
+    && make -j"$(nproc)" && make install \
+    && apt-get purge -y build-essential curl wget perl \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/* /root/ngx_openresty
 
 # Stage 2: PHP-FPM + OpenResty runtime
 FROM php:8.2-fpm-bookworm
@@ -39,61 +45,58 @@ ENV NGINX_CONF=/opt/openresty/nginx/conf
 ENV VAR_PREFIX=/opt/openresty/nginx/var
 ENV VAR_LOG_PREFIX=/opt/openresty/nginx/logs
 
-# Install system packages
-
+# Install system packages, PHP extensions, PECL extensions, and clean up in a single RUN command
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libmagickwand-dev libmagickcore-dev pkg-config \
- && export PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig \
- && pecl install imagick \
- && docker-php-ext-enable imagick
- 
- RUN apt-get update && apt-get install -y --no-install-recommends \
-    tzdata bash curl wget unzip git \
-    libjpeg-dev libpng-dev libwebp-dev libzip-dev libicu-dev \
-    libmemcached-dev libssl-dev imagemagick ghostscript \
-    libcurl4-openssl-dev libxml2-dev libonig-dev \
-    libfreetype-dev pkg-config \
- && cp /usr/share/zoneinfo/${TIMEZONE} /etc/localtime \
- && echo "${TIMEZONE}" > /etc/timezone
+        # System utilities
+        tzdata bash curl wget unzip git imagemagick ghostscript \
+        # PHP extension dependencies
+        libjpeg-dev libpng-dev libwebp-dev libzip-dev libicu-dev \
+        libmemcached-dev libssl-dev libcurl4-openssl-dev libxml2-dev libonig-dev \
+        libfreetype-dev pkg-config libmagickwand-dev libmagickcore-dev \
+    # --- START: FIX FOR IMAGICK ---
+    # Relax ImageMagick's security policy to allow PECL to build the extension.
+    # This comments out all <policy> lines in the policy.xml file.
+    && find /etc/ImageMagick* -name "policy.xml" -exec sed -i 's/<policy domain=.*name=.*rights=.*pattern=.*>//g' {} + \
+    # --- END: FIX FOR IMAGICK ---
+    # Set timezone
+    && ln -snf /usr/share/zoneinfo/${TIMEZONE} /etc/localtime && echo "${TIMEZONE}" > /etc/timezone \
+    # Configure and install PHP extensions
+    && docker-php-ext-configure gd --with-jpeg --with-webp --with-freetype \
+    && docker-php-ext-install -j"$(nproc)" \
+        gd pdo_mysql opcache sockets mysqli calendar intl exif zip \
+    # Install PECL extensions (now with the relaxed policy)
+    && pecl install redis mongodb memcached imagick \
+    && docker-php-ext-enable redis mongodb memcached imagick \
+    # Clean up
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-
-
-# Install PHP extensions
-RUN docker-php-ext-configure gd --with-jpeg --with-webp --with-freetype \
- && docker-php-ext-install gd pdo_mysql opcache sockets mysqli calendar intl exif zip
-
-# Install PECL extensions
-
-
-
-
-
-RUN pecl install redis mongodb memcached imagick \
- && docker-php-ext-enable redis mongodb memcached imagick
-
+# (ส่วนที่เหลือของ Dockerfile เหมือนเดิม)
 # Copy OpenResty from builder
 COPY --from=openresty-builder /opt/openresty /opt/openresty
+
+# Create symlinks for OpenResty binaries
 RUN ln -sf $NGINX_PREFIX/sbin/nginx /usr/local/bin/nginx \
- && ln -sf $NGINX_PREFIX/sbin/nginx /usr/local/bin/openresty \
- && ln -sf $OPENRESTY_PREFIX/bin/resty /usr/local/bin/resty \
- && ln -sf $OPENRESTY_PREFIX/luajit/bin/luajit $OPENRESTY_PREFIX/luajit/bin/lua \
- && ln -sf $OPENRESTY_PREFIX/luajit/bin/luajit /usr/local/bin/lua
+    && ln -sf $NGINX_PREFIX/sbin/nginx /usr/local/bin/openresty \
+    && ln -sf $OPENRESTY_PREFIX/bin/resty /usr/local/bin/resty \
+    && ln -sf $OPENRESTY_PREFIX/luajit/bin/luajit $OPENRESTY_PREFIX/luajit/bin/lua \
+    && ln -sf $OPENRESTY_PREFIX/luajit/bin/luajit /usr/local/bin/lua
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Configs
-WORKDIR $NGINX_CONF
-COPY ./config/nginx.conf ./nginx.conf
+# Create necessary directories and set up default page
+RUN mkdir -p /var/www/html $VAR_PREFIX/client_body_temp $VAR_PREFIX/proxy_temp $VAR_PREFIX/fastcgi_temp \
+    && echo '<?php if(isset($_REQUEST["printinfo"])) phpinfo(); else echo "<a href=\"/?printinfo\">see phpinfo()</a>"; ?>' > /var/www/html/index.php
+
+# Copy configurations
+COPY ./config/nginx.conf $NGINX_CONF/nginx.conf
 COPY ./config/php.ini /usr/local/etc/php/php.ini
 COPY ./www.conf /usr/local/etc/php-fpm.d/www.conf
 COPY ./start.sh /start.sh
 RUN chmod +x /start.sh
 
-# Default index
-RUN mkdir -p /var/www/html \
- && echo '<?php if(isset($_REQUEST["printinfo"])) phpinfo(); ?>' > /var/www/html/index.php \
- && echo '<a href="/?printinfo">see phpinfo()</a>' >> /var/www/html/index.php
+WORKDIR /var/www/html
 
 EXPOSE 80
 ENTRYPOINT ["bash", "/start.sh"]
