@@ -2,13 +2,9 @@
 ## check if docker-compose exist?
 
 # ตรวจสอบว่ามีการส่งพารามิเตอร์เข้ามาหรือไม่
-if [ -z "$1" ]; then
-  echo "Error: กรุณาระบุรหัสผ่านเป็นพารามิเตอร์แรก"
-  echo "Usage: $0 <MYSQL_ROOT_PASSWORD>"
-  false
-  exit 0
-fi
-
+if [ $# -ne 1 ]; then
+  echo "Usage: $0 <your_mariadb_root_password>"
+  exit 1
 # กำหนดรหัสผ่านจากพารามิเตอร์
 mypassword="$1"
 
