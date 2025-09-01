@@ -57,6 +57,11 @@ RUN docker-php-ext-configure gd --with-jpeg --with-webp --with-freetype \
  && docker-php-ext-install gd pdo_mysql opcache sockets mysqli calendar intl exif zip
 
 # Install PECL extensions
+
+ENV PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig
+RUN apt-get install -y imagemagick-dev
+
+
 RUN pecl install redis mongodb memcached imagick \
  && docker-php-ext-enable redis mongodb memcached imagick
 
