@@ -12,8 +12,8 @@ fi
 mypassword="$1"
 
 # เขียนค่ารหัสผ่านกลับไปยัง docker-compose.yml
-sed -i "s/MYSQL_ROOT_PASSWORD=.*/MYSQL_ROOT_PASSWORD=$mypassword/" docker-compose.yml
-sed -i "s/WORDPRESS_DB_PASSWORD=.*/WORDPRESS_DB_PASSWORD=$mypassword/" docker-compose.yml
+sed -i "s/MARIADB_ROOT_PASSWORD=.*/MARIADB_ROOT_PASSWORD=$mypassword/" docker-compose.yml
+sed -i "s/MARIADB_PASSWORD=.*/MARIADB_PASSWORD=$mypassword/" docker-compose.yml
 
 compose=$(which docker compose)
 if [ -z "$compose" ]; then
