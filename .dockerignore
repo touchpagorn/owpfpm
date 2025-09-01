@@ -1,0 +1,9 @@
+node_modules
+vendor
+tests
+*.log
+*.tar.gz
+*.zip
+Dockerfile.old
+composer-setup.php
+.env
