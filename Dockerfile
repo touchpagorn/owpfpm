@@ -3,7 +3,7 @@ FROM alpine:3.22 AS openresty-builder
 
 ARG OPENRESTY_VERSION=1.21.4.1
 ENV OPENRESTY_PREFIX=/opt/openresty
-
+RUN sed -i 's/dl-cdn.alpinelinux.org/dl-2.alpinelinux.org/g' /etc/apk/repositories
 RUN apk add --no-cache --virtual .build-deps \
     make gcc musl-dev pcre-dev openssl-dev zlib-dev ncurses-dev readline-dev curl perl wget \
  && mkdir -p /root/openresty \
