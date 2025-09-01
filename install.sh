@@ -1,5 +1,20 @@
 #!/bin/sh
 ## check if docker-compose exist?
+
+# ตรวจสอบว่ามีการส่งพารามิเตอร์เข้ามาหรือไม่
+if [ -z "$1" ]; then
+  echo "❌ Error: กรุณาระบุรหัสผ่านเป็นพารามิเตอร์แรก"
+  echo "Usage: $0 <MYSQL_ROOT_PASSWORD>"
+  exit 1
+fi
+
+# กำหนดรหัสผ่านจากพารามิเตอร์
+mypassword="$1"
+
+# เขียนค่ารหัสผ่านกลับไปยัง docker-compose.yml
+sed -i "s/MYSQL_ROOT_PASSWORD=.*/MYSQL_ROOT_PASSWORD=$mypassword/" docker-compose.yml
+sed -i "s/WORDPRESS_DB_PASSWORD=.*/WORDPRESS_DB_PASSWORD=$mypassword/" docker-compose.yml
+
 compose=$(which docker compose)
 if [ -z "$compose" ]; then
   echo "docker compose not installed,"
@@ -19,7 +34,7 @@ cp config/source/index.html html/index.html
 
 echo "Create a WordPress service."
 docker compose up -d
-mypassword=$(grep MYSQL_ROOT_PASSWORD docker-compose.yml|awk -F\= '{print $2}')
+#mypassword=$(grep MYSQL_ROOT_PASSWORD docker-compose.yml|awk -F\= '{print $2}')
 
 
 docker exec web sh -c "chown -R www-data:www-data /var/www/html"
