@@ -49,7 +49,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
  && echo "${TIMEZONE}" > /etc/timezone
 
 # Install PHP extensions
-RUN docker-php-ext-configure gd --with-jpeg --with-webp --with-png \
+RUN docker-php-ext-configure gd --with-jpeg --with-webp --with-freetype \
  && docker-php-ext-install gd pdo_mysql opcache sockets mysqli calendar intl exif zip
 
 # Install PECL extensions
