@@ -24,6 +24,9 @@ RUN apk add --no-cache --virtual .build-deps \
 
 # Stage 2: PHP-FPM + OpenResty runtime
 FROM php:8.3-fpm-alpine3.22
+RUN sed -i 's/dl-cdn.alpinelinux.org/dl-2.alpinelinux.org/g' /etc/apk/repositories
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/' /etc/apk/repositories
+
 
 # Timezone
 ENV TIMEZONE=Asia/Bangkok
@@ -36,7 +39,7 @@ RUN apk add --no-cache --virtual .ext-deps \
     libjpeg-turbo-dev libwebp-dev libpng-dev freetype-dev \
     libzip-dev imagemagick-dev icu-dev \
  && docker-php-ext-configure gd --with-freetype --with-jpeg \
- && docker-php-ext-install gd pdo_mysql opcache sockets mysqli calendar intl exif \
+ && docker-php-ext-install gd pdo_mysql opcache mysqli calendar intl exif \
  && pecl install redis mongodb memcached imagick zip \
  && docker-php-ext-enable redis mongodb memcached imagick zip intl \
  && apk del .ext-deps
