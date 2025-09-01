@@ -45,33 +45,31 @@ ENV NGINX_CONF=/opt/openresty/nginx/conf
 ENV VAR_PREFIX=/opt/openresty/nginx/var
 ENV VAR_LOG_PREFIX=/opt/openresty/nginx/logs
 
-# Install system packages, PHP extensions, PECL extensions, and clean up in a single RUN command
+# Install ALL dependencies and extensions in a single RUN layer for efficiency
 RUN apt-get update && apt-get install -y --no-install-recommends \
+        # OpenResty runtime dependencies (to fix shared library error)
+        libpcre3 zlib1g libreadline8 libncurses6 \
         # System utilities
         tzdata bash curl wget unzip git imagemagick ghostscript \
         # PHP extension dependencies
         libjpeg-dev libpng-dev libwebp-dev libzip-dev libicu-dev \
         libmemcached-dev libssl-dev libcurl4-openssl-dev libxml2-dev libonig-dev \
         libfreetype-dev pkg-config libmagickwand-dev libmagickcore-dev \
-    # --- START: FIX FOR IMAGICK ---
     # Relax ImageMagick's security policy to allow PECL to build the extension.
-    # This comments out all <policy> lines in the policy.xml file.
     && find /etc/ImageMagick* -name "policy.xml" -exec sed -i 's/<policy domain=.*name=.*rights=.*pattern=.*>//g' {} + \
-    # --- END: FIX FOR IMAGICK ---
     # Set timezone
     && ln -snf /usr/share/zoneinfo/${TIMEZONE} /etc/localtime && echo "${TIMEZONE}" > /etc/timezone \
     # Configure and install PHP extensions
     && docker-php-ext-configure gd --with-jpeg --with-webp --with-freetype \
     && docker-php-ext-install -j"$(nproc)" \
         gd pdo_mysql opcache sockets mysqli calendar intl exif zip \
-    # Install PECL extensions (now with the relaxed policy)
+    # Install PECL extensions
     && pecl install redis mongodb memcached imagick \
     && docker-php-ext-enable redis mongodb memcached imagick \
     # Clean up
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# (ส่วนที่เหลือของ Dockerfile เหมือนเดิม)
 # Copy OpenResty from builder
 COPY --from=openresty-builder /opt/openresty /opt/openresty
 
