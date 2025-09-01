@@ -41,12 +41,18 @@ ENV VAR_LOG_PREFIX=/opt/openresty/nginx/logs
 
 # Install system packages
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libmagickwand-dev libmagickcore-dev pkg-config \
+ && export PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig \
+ && pecl install imagick \
+ && docker-php-ext-enable imagick
+ 
  RUN apt-get update && apt-get install -y --no-install-recommends \
     tzdata bash curl wget unzip git \
     libjpeg-dev libpng-dev libwebp-dev libzip-dev libicu-dev \
     libmemcached-dev libssl-dev imagemagick ghostscript \
     libcurl4-openssl-dev libxml2-dev libonig-dev \
-    libfreetype-dev pkg-config   libmagickwand-dev \
+    libfreetype-dev pkg-config \
  && cp /usr/share/zoneinfo/${TIMEZONE} /etc/localtime \
  && echo "${TIMEZONE}" > /etc/timezone
 
@@ -58,8 +64,8 @@ RUN docker-php-ext-configure gd --with-jpeg --with-webp --with-freetype \
 
 # Install PECL extensions
 
-ENV PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig
-RUN apt-get install -y imagemagick-dev
+
+
 
 
 RUN pecl install redis mongodb memcached imagick \
