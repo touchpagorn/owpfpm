@@ -27,7 +27,6 @@ FROM php:8.3-fpm-alpine3.22
 RUN sed -i 's/dl-cdn.alpinelinux.org/dl-2.alpinelinux.org/g' /etc/apk/repositories
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/' /etc/apk/repositories
 
-
 # Timezone
 ENV TIMEZONE=Asia/Bangkok
 RUN apk add --no-cache tzdata \
