@@ -5,6 +5,7 @@
 if [ $# -ne 1 ]; then
   echo "Usage: $0 <your_mariadb_root_password>"
   exit 1
+fi
 # กำหนดรหัสผ่านจากพารามิเตอร์
 mypassword="$1"
 
