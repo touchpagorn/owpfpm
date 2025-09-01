@@ -4,7 +4,7 @@
 # ตรวจสอบว่ามีการส่งพารามิเตอร์เข้ามาหรือไม่
 if [ $# -ne 1 ]; then
   echo "Usage: $0 <your_mariadb_root_password>"
-  return false
+  false
   exit 0
 fi
 # กำหนดรหัสผ่านจากพารามิเตอร์
