@@ -40,13 +40,18 @@ ENV VAR_PREFIX=/opt/openresty/nginx/var
 ENV VAR_LOG_PREFIX=/opt/openresty/nginx/logs
 
 # Install system packages
-RUN apt-get update && apt-get install -y --no-install-recommends \
+
+
+ RUN apt-get update && apt-get install -y --no-install-recommends \
     tzdata bash curl wget unzip git \
     libjpeg-dev libpng-dev libwebp-dev libzip-dev libicu-dev \
     libmemcached-dev libssl-dev imagemagick ghostscript \
     libcurl4-openssl-dev libxml2-dev libonig-dev \
+    libfreetype-dev pkg-config \
  && cp /usr/share/zoneinfo/${TIMEZONE} /etc/localtime \
  && echo "${TIMEZONE}" > /etc/timezone
+
+
 
 # Install PHP extensions
 RUN docker-php-ext-configure gd --with-jpeg --with-webp --with-freetype \
