@@ -2,14 +2,15 @@
 FROM debian:bookworm-slim AS openresty-builder
 
 ARG OPENRESTY_VERSION=1.21.4.1
+ARG USE_THAI_MIRROR=TRUE
 ENV OPENRESTY_PREFIX=/opt/openresty
 
+RUN if [ "$USE_THAI_MIRROR" = "TRUE" ]; then \
+      echo "deb http://mirror.kku.ac.th/debian bookworm main\n\
+deb http://mirror.kku.ac.th/debian bookworm-updates main\n\
+deb http://mirror.kku.ac.th/debian-security bookworm-security main" > /etc/apt/sources.list ; \
+    fi
 
-# เปลี่ยน source list เป็น mirror ไทย
-RUN sed -i 's|http://deb.debian.org|http://mirror.kku.ac.th/debian|g' /etc/apt/sources.list && \
-    sed -i 's|http://security.debian.org|http://mirror.kku.ac.th/debian-security|g' /etc/apt/sources.list
-
-    
 # ติดตั้งเฉพาะที่จำเป็น พร้อม clean cache
 RUN apt-get update && \
     apt-get install -y --no-install-recommends ca-certificates curl && \
