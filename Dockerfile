@@ -4,6 +4,17 @@ FROM debian:bookworm-slim AS openresty-builder
 ARG OPENRESTY_VERSION=1.21.4.1
 ENV OPENRESTY_PREFIX=/opt/openresty
 
+
+# เปลี่ยน source list เป็น mirror ไทย
+RUN sed -i 's|http://deb.debian.org|http://mirror.kku.ac.th/debian|g' /etc/apt/sources.list && \
+    sed -i 's|http://security.debian.org|http://mirror.kku.ac.th/debian-security|g' /etc/apt/sources.list
+
+    
+# ติดตั้งเฉพาะที่จำเป็น พร้อม clean cache
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends ca-certificates curl && \
+    rm -rf /var/lib/apt/lists/*
+
 # Install build dependencies, download, compile, and clean up in a single RUN command
 RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential curl wget ca-certificates \
