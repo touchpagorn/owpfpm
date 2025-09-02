@@ -5,11 +5,10 @@ ARG OPENRESTY_VERSION=1.21.4.1
 ARG USE_THAI_MIRROR=TRUE
 ENV OPENRESTY_PREFIX=/opt/openresty
 
-RUN if [ "$USE_THAI_MIRROR" = "TRUE" ]; then \
-      echo "deb http://mirror.kku.ac.th/debian bookworm main\n\
+# สร้าง sources.list ใหม่แบบ minimal ด้วย mirror ไทย
+RUN echo "deb http://mirror.kku.ac.th/debian bookworm main\n\
 deb http://mirror.kku.ac.th/debian bookworm-updates main\n\
-deb http://mirror.kku.ac.th/debian-security bookworm-security main" > /etc/apt/sources.list ; \
-    fi
+deb http://mirror.kku.ac.th/debian-security bookworm-security main" > /etc/apt/sources.list
 
 # ติดตั้งเฉพาะที่จำเป็น พร้อม clean cache
 RUN apt-get update && \
