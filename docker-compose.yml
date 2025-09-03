@@ -16,7 +16,7 @@ services:
       - ./config/ssl_common.conf:/opt/openresty/nginx/conf/ssl_common.conf
 
   db:
-    image: bitnami/mariadb:11.8.2
+    image: mariadb:11.8.2
     container_name: db
     restart: always
     environment:
