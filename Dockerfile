@@ -6,18 +6,6 @@ ARG USE_THAI_MIRROR=TRUE
 ENV OPENRESTY_PREFIX=/opt/openresty
 
 
-# สร้าง sources.list ใหม่แบบ minimal ด้วย mirror ไทย
-
-RUN echo "deb http://mirror.kku.ac.th/debian bookworm main\n\
-deb http://mirror.kku.ac.th/debian bookworm-updates main\n\
-deb http://mirror.kku.ac.th/debian-security bookworm-security main" > /etc/apt/sources.list
-
-# ติดตั้งแพ็กเกจที่จำเป็น
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends ca-certificates curl && \
-    rm -rf /var/lib/apt/lists/*
-
-
 # Install build dependencies, download, compile, and clean up in a single RUN command
 RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential curl wget ca-certificates \
