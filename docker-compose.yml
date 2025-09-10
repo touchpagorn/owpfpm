@@ -14,9 +14,7 @@ services:
       - ./config/ssl/private.key:/opt/openresty/nginx/conf/ssl/private.key
       - ./config/php.ini:/usr/local/etc/php/php.ini
       - ./config/nginx.conf:/opt/openresty/nginx/conf/nginx.conf
-      - ./config/security_headers.conf:/opt/openresty/nginx/conf/security_headers.conf
-      - ./config/ssl_common.conf:/opt/openresty/nginx/conf/ssl_common.conf
-
+      - ./config/owfpm:/opt/openresty/nginx/conf/owfpm
   db:
     image: mariadb:11.8.2
     container_name: db
@@ -25,8 +23,8 @@ services:
       - MARIADB_HOST=db
       - MARIADB_USER=db_owpfpm
       - MARIADB_DATABASE=db_owpfpm
-      - MARIADB_ROOT_PASSWORD=Gc4H2msNvV9JA4ALua
-      - MARIADB_PASSWORD=Gc4H2msNvV9JA4ALua
+      - MARIADB_ROOT_PASSWORD=FromParameter
+      - MARIADB_PASSWORD=FromParameter
     volumes:
       - mariadb_data:/var/lib/mysql
     networks:
