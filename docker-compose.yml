@@ -3,6 +3,8 @@ services:
     build: .
     container_name: web
     restart: always
+    environment:
+      - ENABLE_SSL=true
     ports:
       - 80:80
       - 443:443
@@ -16,7 +18,7 @@ services:
       - ./config/ssl_common.conf:/opt/openresty/nginx/conf/ssl_common.conf
 
   db:
-    image: bitnami/mariadb:11.8.2
+    image: mariadb:11.8.2
     container_name: db
     restart: always
     environment:
@@ -26,7 +28,7 @@ services:
       - MARIADB_ROOT_PASSWORD=Gc4H2msNvV9JA4ALua
       - MARIADB_PASSWORD=Gc4H2msNvV9JA4ALua
     volumes:
-      - mariadb_data:/bitnami/mariadb
+      - mariadb_data:/var/lib/mysql
     networks:
       - backend
       
