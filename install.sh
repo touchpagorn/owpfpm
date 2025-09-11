@@ -1,20 +1,27 @@
 #!/bin/sh
+
+
+echo "กรุณาระบุ root password:"
+read -r root_password
+
+echo "กรุณาระบุ user password:"
+read -r user_password
+
+echo "กรุณาระบุชื่อฐานข้อมูล:"
+read -r db_name
+
+# สร้างโฟลเดอร์ secrets ถ้ายังไม่มี
+mkdir -p ./config/secrets
+
+# เขียนค่าลงไฟล์
+printf "%s\n" "$root_password" > ./config/secrets/db_root_password.txt
+printf "%s\n" "$user_password" > ./config/secrets/db_user_password.txt
+printf "%s\n" "$db_name"       > ./config/secrets/db_name.txt
+
 ## check if docker-compose exist?
-
-# ตรวจสอบว่ามีการส่งพารามิเตอร์เข้ามาหรือไม่
-if [ $# -ne 1 ]; then
-  echo "Usage: $0 <your_mariadb_root_password>"
-  false
-  exit 0
-fi
-# กำหนดรหัสผ่านจากพารามิเตอร์
-mypassword="$1"
-
-# เขียนค่ารหัสผ่าน ไปใน secret file
-printf "%s\n" "$mypassword" > ./config/secrets/db_root_password.txt
-printf "%s\n" "$mypassword" > ./config/secrets/db_user_password.txt
 chmod 400 ./config/secrets/db_root_password.txt
 chmod 400 ./config/secrets/db_user_password.txt
+chmod 400 ./config/secrets/db_name.txt
 
 #sed -i "s/MARIADB_ROOT_PASSWORD=.*/MARIADB_ROOT_PASSWORD=$mypassword/" docker-compose.yml
 #sed -i "s/MARIADB_PASSWORD=.*/MARIADB_PASSWORD=$mypassword/" docker-compose.yml
