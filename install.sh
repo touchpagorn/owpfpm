@@ -1,14 +1,10 @@
 #!/bin/sh
 
-
-echo "Please enter DB root Password:"
-read -r root_password
-
-echo "Please enter DB user Password:"
-read -r user_password
-
-echo "Please enter DB name:"
-read -r db_name
+read -s -p "Please enter DB root Password: " root_password
+echo ""
+read -s -p "Please enter DB user Password: " user_password
+echo ""
+read -p "Please enter DB name: " db_name
 
 # Create secrets folder if not exists
 mkdir -p ./config/secrets
