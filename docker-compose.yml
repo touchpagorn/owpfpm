@@ -14,22 +14,32 @@ services:
       - ./config/ssl/private.key:/opt/openresty/nginx/conf/ssl/private.key
       - ./config/php.ini:/usr/local/etc/php/php.ini
       - ./config/nginx.conf:/opt/openresty/nginx/conf/nginx.conf
-      - ./config/owfpm:/opt/openresty/nginx/conf/owfpm
+      - ./config/owpfpm:/opt/openresty/nginx/conf/owpfpm
+    networks:
+      - frontend
+      - backend  # ✅ เพิ่ม backend network เพื่อให้มองเห็น db
   db:
     image: mariadb:11.8.2
     container_name: db
     restart: always
     environment:
-      - MARIADB_HOST=db
-      - MARIADB_USER=db_owpfpm
-      - MARIADB_DATABASE=db_owpfpm
-      - MARIADB_ROOT_PASSWORD=FromParameter
-      - MARIADB_PASSWORD=FromParameter
+      MARIADB_HOST: db
+      MARIADB_USER: db_owpfpm
+      MARIADB_DATABASE: db_owpfpm
+      MARIADB_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
+      MARIADB_PASSWORD_FILE: /run/secrets/db_user_password
+    secrets:
+      - db_root_password
+      - db_user_password
     volumes:
       - mariadb_data:/var/lib/mysql
     networks:
       - backend
-      
+secrets:
+  db_root_password:
+    file: ./config/secrets/db_root_password.txt
+  db_user_password:
+    file: ./config/secrets/db_user_password.txt
 volumes:
   mariadb_data: {}
 networks:

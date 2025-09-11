@@ -10,9 +10,14 @@ fi
 # กำหนดรหัสผ่านจากพารามิเตอร์
 mypassword="$1"
 
-# เขียนค่ารหัสผ่านกลับไปยัง docker-compose.yml
-sed -i "s/MARIADB_ROOT_PASSWORD=.*/MARIADB_ROOT_PASSWORD=$mypassword/" docker-compose.yml
-sed -i "s/MARIADB_PASSWORD=.*/MARIADB_PASSWORD=$mypassword/" docker-compose.yml
+# เขียนค่ารหัสผ่าน ไปใน secret file
+printf "%s\n" "$mypassword" > ./config/secrets/db_root_password.txt
+printf "%s\n" "$mypassword" > ./config/secrets/db_user_password.txt
+chmod 400 ./config/secrets/db_root_password.txt
+chmod 400 ./config/secrets/db_user_password.txt
+
+#sed -i "s/MARIADB_ROOT_PASSWORD=.*/MARIADB_ROOT_PASSWORD=$mypassword/" docker-compose.yml
+#sed -i "s/MARIADB_PASSWORD=.*/MARIADB_PASSWORD=$mypassword/" docker-compose.yml
 
 compose=$(which docker compose)
 if [ -z "$compose" ]; then
