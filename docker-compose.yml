@@ -24,8 +24,8 @@ services:
     restart: always
     environment:
       MARIADB_HOST: db
-      MARIADB_USER: db_owpfpm
-      MARIADB_DATABASE: db_owpfpm
+      MARIADB_USER_FILE: /run/secrets/db_name
+      MARIADB_DATABASE_FILE: /run/secrets/db_name
       MARIADB_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
       MARIADB_PASSWORD_FILE: /run/secrets/db_user_password
     secrets:
@@ -40,6 +40,8 @@ secrets:
     file: ./config/secrets/db_root_password.txt
   db_user_password:
     file: ./config/secrets/db_user_password.txt
+  db_name:
+    file: ./config/secrets/db_name.txt
 volumes:
   mariadb_data: {}
 networks:

@@ -1,16 +1,16 @@
 #!/bin/sh
 
 
-echo "กรุณาระบุ root password:"
+echo "Please enter DB root Password:"
 read -r root_password
 
-echo "กรุณาระบุ user password:"
+echo "Please enter DB user Password:"
 read -r user_password
 
-echo "กรุณาระบุชื่อฐานข้อมูล:"
+echo "Please enter DB name:"
 read -r db_name
 
-# สร้างโฟลเดอร์ secrets ถ้ายังไม่มี
+# Create secrets folder if not exists
 mkdir -p ./config/secrets
 
 # เขียนค่าลงไฟล์
