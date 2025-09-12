@@ -9,6 +9,14 @@ read -p "Please enter Database name: " db_name
 # Create secrets folder if not exists
 mkdir -p ./config/secrets
 
+mkdir -p ./config/ssl
+openssl req -x509 -nodes -days 365 \
+    -newkey rsa:2048 \
+    -keyout ./config/ssl/private.key \
+    -out ./config/ssl/sertificate.crt \
+    -subj "/C=TH/ST=Chonburi/L=Na Kluea/O=Touchpagorn/OU=Dev/CN=localhost"
+
+    
 # เขียนค่าลงไฟล์
 printf "%s\n" "$root_password" > ./config/secrets/db_root_password.txt
 printf "%s\n" "$user_password" > ./config/secrets/db_user_password.txt
