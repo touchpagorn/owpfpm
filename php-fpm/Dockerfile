@@ -17,7 +17,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 COPY ./config/php.ini /usr/local/etc/php/php.ini
-COPY ./www.conf /usr/local/etc/php-fpm.d/www.conf
+COPY ./config/www.conf /usr/local/etc/php-fpm.d/www.conf
 
 WORKDIR /var/www/html
 CMD ["php-fpm"]
