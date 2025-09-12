@@ -1,7 +1,5 @@
-version: '3.8'
-
 services:
-  web:
+  openresty:
     build:
       context: ./openresty
     container_name: web

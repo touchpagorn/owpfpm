@@ -18,12 +18,23 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         --add-module=/root/ngx_openresty/ngx_cache_purge-2.3 \
         --with-luajit \
         --with-pcre-jit \
-        --with-http_ssl_module \
+        --with-ipv6 \
         --with-http_stub_status_module \
+        --with-http_ssl_module \
+        --with-http_flv_module \
+        --with-http_v2_module \
+        --with-http_mp4_module \
+        --with-http_sub_module \
+        --without-http_ssi_module \
+        --without-http_uwsgi_module \
+        --without-http_scgi_module \
     && make -j"$(nproc)" && make install \
     && apt-get purge -y build-essential curl wget perl \
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/* /root/ngx_openresty
+
+
+
 
 # Symlink for convenience
 RUN ln -sf $OPENRESTY_PREFIX/nginx/sbin/nginx /usr/local/bin/openresty
@@ -32,3 +43,5 @@ COPY ./config/nginx.conf $OPENRESTY_PREFIX/nginx/conf/nginx.conf
 
 EXPOSE 80
 CMD ["openresty", "-g", "daemon off;"]
+#CMD ["nginx"]
+#ENTRYPOINT ["bash", "/start.sh"]
