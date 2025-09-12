@@ -1,23 +1,40 @@
+version: '3.8'
+
 services:
   web:
-    build: .
+    build:
+      context: ./openresty
     container_name: web
     restart: always
     environment:
       - ENABLE_SSL=true
     ports:
-      - 80:80
-      - 443:443
+      - "80:80"
+      - "443:443"
     volumes:
       - ./html:/var/www/html
       - ./config/ssl/certificate.crt:/opt/openresty/nginx/conf/ssl/certificate.crt
       - ./config/ssl/private.key:/opt/openresty/nginx/conf/ssl/private.key
-      - ./config/php.ini:/usr/local/etc/php/php.ini
-      - ./config/nginx.conf:/opt/openresty/nginx/conf/nginx.conf
-      - ./config/owpfpm:/opt/openresty/nginx/conf/owpfpm
+      - ./openresty/config/nginx.conf:/opt/openresty/nginx/conf/nginx.conf
+      - ./openresty/config/owpfpm:/opt/openresty/nginx/conf/owpfpm
+    depends_on:
+      - php-fpm
     networks:
       - frontend
-      - backend  # ✅ เพิ่ม backend network เพื่อให้มองเห็น db
+      - backend
+
+  php-fpm:
+    build:
+      context: ./php-fpm
+    container_name: php-fpm
+    restart: always
+    volumes:
+      - ./html:/var/www/html
+      - ./php-fpm/config/php.ini:/usr/local/etc/php/php.ini
+      - ./php-fpm/config/www.conf:/usr/local/etc/php-fpm.d/www.conf
+    networks:
+      - backend
+
   db:
     image: mariadb:11.8.2
     container_name: db
@@ -36,6 +53,7 @@ services:
       - mariadb_data:/var/lib/mysql
     networks:
       - backend
+
 secrets:
   db_root_password:
     file: ./config/secrets/db_root_password.txt
@@ -43,18 +61,18 @@ secrets:
     file: ./config/secrets/db_user_password.txt
   db_name:
     file: ./config/secrets/db_name.txt
+
 volumes:
   mariadb_data: {}
+
 networks:
   frontend:
     driver: bridge
     ipam:
       config:
         - subnet: 172.23.0.0/24
-
   backend:
     driver: bridge
     ipam:
       config:
         - subnet: 172.23.1.0/24
-
