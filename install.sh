@@ -6,17 +6,33 @@ read -s -p "Please enter Database user Password: " user_password
 echo ""
 read -p "Please enter Database name: " db_name
 
+
+set -e
+
+# Configurable paths
+SSL_DIR="./config/ssl"
+KEY_FILE="$SSL_DIR/private.key"
+CERT_FILE="$SSL_DIR/certificate.crt"
+DAYS_VALID=365
+
+# Create directory if it doesn't exist
+mkdir -p "$SSL_DIR"
+
+# Generate cert only if not already present
+if [[ -f "$KEY_FILE" && -f "$CERT_FILE" ]]; then
+    echo "[INFO] SSL certificate already exists. Skipping generation."
+else
+    echo "[INFO] Generating self-signed SSL certificate..."
+    openssl req -x509 -nodes -days "$DAYS_VALID" \
+        -newkey rsa:2048 \
+        -keyout "$KEY_FILE" \
+        -out "$CERT_FILE" \
+        -subj "/C=TH/ST=Chonburi/L=Na Kluea/O=Touchpagorn/OU=Dev/CN=localhost"
+    echo "[INFO] Certificate generated at: $CERT_FILE"
+fi
+
 # Create secrets folder if not exists
 mkdir -p ./config/secrets
-
-mkdir -p ./config/ssl
-openssl req -x509 -nodes -days 365 \
-    -newkey rsa:2048 \
-    -keyout ./config/ssl/private.key \
-    -out ./config/ssl/sertificate.crt \
-    -subj "/C=TH/ST=Chonburi/L=Na Kluea/O=Touchpagorn/OU=Dev/CN=localhost"
-
-    
 # เขียนค่าลงไฟล์
 printf "%s\n" "$root_password" > ./config/secrets/db_root_password.txt
 printf "%s\n" "$user_password" > ./config/secrets/db_user_password.txt
