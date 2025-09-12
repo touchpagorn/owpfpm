@@ -19,7 +19,7 @@ DAYS_VALID=365
 mkdir -p "$SSL_DIR"
 
 # Generate cert only if not already present
-if [[ -f "$KEY_FILE" && -f "$CERT_FILE" ]]; then
+if [ -f "$KEY_FILE" ] && [ -f "$CERT_FILE" ]; then
     echo "[INFO] SSL certificate already exists. Skipping generation."
 else
     echo "[INFO] Generating self-signed SSL certificate..."
