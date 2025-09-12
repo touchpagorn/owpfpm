@@ -1,4 +1,4 @@
-FROM php:8.2-fpm-bookworm
+FROM php:8.2-fpm-slim
 
 ENV TIMEZONE=Asia/Bangkok
 
