@@ -33,8 +33,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/* /root/ngx_openresty
 
-
-
+# Generate self-signed SSL certificate
+RUN openssl req -x509 -nodes -days 365 \
+    -newkey rsa:2048 \
+    -keyout ./config/ssl/private.key \
+    -out ./config/ssl/sertificate.crt \
+    -subj "/C=TH/ST=Chonburi/L=Na Kluea/O=Touchpagorn/OU=Dev/CN=localhost"
 
 # Symlink for convenience
 RUN ln -sf $OPENRESTY_PREFIX/nginx/sbin/nginx /usr/local/bin/openresty
@@ -43,5 +47,3 @@ COPY ./config/nginx.conf $OPENRESTY_PREFIX/nginx/conf/nginx.conf
 
 EXPOSE 80
 CMD ["openresty", "-g", "daemon off;"]
-#CMD ["nginx"]
-#ENTRYPOINT ["bash", "/start.sh"]
