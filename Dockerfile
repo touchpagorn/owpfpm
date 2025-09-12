@@ -5,7 +5,6 @@ ARG OPENRESTY_VERSION=1.21.4.1
 ARG USE_THAI_MIRROR=TRUE
 ENV OPENRESTY_PREFIX=/opt/openresty
 
-
 # Install build dependencies, download, compile, and clean up in a single RUN command
 RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential curl wget ca-certificates \
