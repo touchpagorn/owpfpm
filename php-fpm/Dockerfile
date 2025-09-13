@@ -16,9 +16,10 @@ RUN apk add --no-cache --virtual .build-deps \
         --with-jpeg \
         --with-webp \
         --with-freetype \
+        
     && docker-php-ext-install -j$(nproc) \
-        gd pdo_mysql opcache sockets mysqli calendar intl exif zip mbstring \
-    && pecl install redis mongodb memcached imagick \
+        gd pdo_mysql opcache mysqli calendar intl exif zip mbstring \
+        && pecl install redis mongodb memcached imagick \
     && docker-php-ext-enable redis mongodb memcached imagick
 
 # Stage 2: Final image
