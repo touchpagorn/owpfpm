@@ -6,9 +6,6 @@ read -s -p "Please enter Database user Password: " user_password
 echo ""
 read -p "Please enter Database name: " db_name
 
-
-set -e
-
 # Configurable paths
 SSL_DIR="./config/ssl"
 KEY_FILE="$SSL_DIR/private.key"
@@ -67,7 +64,6 @@ echo "Create a WordPress service."
 docker compose up -d
 #mypassword=$(grep MYSQL_ROOT_PASSWORD docker-compose.yml|awk -F\= '{print $2}')
 
-
 docker exec web sh -c "chown -R www-data:www-data /var/www/html"
 
 
@@ -76,11 +72,11 @@ echo "done..."
 echo "====================="
 echo "WordPress site: $(hostname -I|awk '{print "http://"$1":8888"}')"
 echo "[Database info]"
-echo "db:   wordpress"
+echo "db:   $db_name"
 echo "host: db"
-echo "user: root"
-echo "pass: $mypassword"
+echo "user: $db_name"
+echo "pass: $user_password"
 echo "====================="
 
 echo "Remove install.sh script."
-#rm -f ./install.sh
+rm -f ./install.sh
