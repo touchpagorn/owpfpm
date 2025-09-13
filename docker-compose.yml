@@ -1,5 +1,5 @@
 services:
-  openresty:
+  web:
     build:
       context: ./openresty
     container_name: web
