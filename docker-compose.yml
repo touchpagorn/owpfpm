@@ -16,6 +16,7 @@ services:
       - ./openresty/config/nginx.conf:/opt/openresty/nginx/conf/nginx.conf
       - ./openresty/config/owpfpm:/opt/openresty/nginx/conf/owpfpm
       - ./logs/openresty:/opt/openresty/nginx/logs
+    user: "33:33"
     depends_on:
       - php-fpm
     networks:
