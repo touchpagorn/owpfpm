@@ -1,8 +1,8 @@
 #!/bin/sh
 
-read -s -p "Please enter Database root Password: " root_password
+read -p "Please enter Database root Password: " root_password
 echo ""
-read -s -p "Please enter Database user Password: " user_password
+read -p "Please enter Database user Password: " user_password
 echo ""
 read -p "Please enter Database name: " db_name
 
