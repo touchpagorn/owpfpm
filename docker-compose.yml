@@ -5,10 +5,10 @@ services:
     container_name: web
     restart: always
     environment:
-      - ENABLE_SSL=true
+      - ENABLE_SSL=false
     ports:
       - "80:80"
-      - "443:443"
+    # - "443:443"
     volumes:
       - ./html:/var/www/html
       - ./config/ssl/certificate.crt:/opt/openresty/nginx/conf/ssl/certificate.crt
