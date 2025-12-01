@@ -5,10 +5,10 @@ services:
     container_name: web
     restart: always
     environment:
-      - ENABLE_SSL=false
+      - ENABLE_SSL=true
     ports:
       - "80:80"
-    # - "443:443"
+      - "443:443"
     volumes:
       - ./html:/var/www/html
       - ./config/ssl/certificate.crt:/opt/openresty/nginx/conf/ssl/certificate.crt
@@ -16,7 +16,7 @@ services:
       - ./openresty/config/nginx.conf:/opt/openresty/nginx/conf/nginx.conf
       - ./openresty/config/owpfpm:/opt/openresty/nginx/conf/owpfpm
       - ./logs/openresty:/opt/openresty/nginx/logs
-    user: "33:33"
+
     depends_on:
       - php-fpm
     networks:
