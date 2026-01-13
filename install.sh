@@ -1,10 +1,9 @@
 #!/bin/sh
-
+read -p "Please enter Database name: " db_name
+echo ""
 read -p "Please enter Database root Password: " root_password
 echo ""
 read -p "Please enter Database user Password: " user_password
-echo ""
-read -p "Please enter Database name: " db_name
 
 # Configurable paths
 SSL_DIR="./config/ssl"
@@ -43,17 +42,31 @@ chmod 400 ./config/secrets/db_name.txt
 #sed -i "s/MARIADB_ROOT_PASSWORD=.*/MARIADB_ROOT_PASSWORD=$mypassword/" docker-compose.yml
 #sed -i "s/MARIADB_PASSWORD=.*/MARIADB_PASSWORD=$mypassword/" docker-compose.yml
 
-compose=$(which docker compose)
-if [ -z "$compose" ]; then
-  echo "docker compose not installed,"
-  echo "follow this https://docs.docker.com/compose/install/ to install it first."
+# ตรวจสอบว่า Docker ติดตั้งอยู่หรือไม่
+if ! command -v docker >/dev/null 2>&1; then
+  echo "docker is not installed."
+  echo "Please install Docker first: https://docs.docker.com/engine/install/"
   exit 1
-else
-  if [ ! -x "$compose" ]; then
-     echo "$compose is not executable,"
-     echo "follow this https://docs.docker.com/compose/install/ to complete an installation"
-     exit 1
-  fi
+fi
+
+# ตรวจสอบว่า docker compose เป็น version 2 ขึ้นไป
+compose_version=$(
+  docker compose version --short 2>/dev/null || \
+  docker compose version 2>/dev/null | awk '{print $3}'
+)
+
+if [ -z "$compose_version" ]; then
+  echo "docker compose (v2) is not available."
+  echo "Follow this to install/enable it: https://docs.docker.com/compose/install/"
+  exit 1
+fi
+
+compose_major=$(echo "$compose_version" | cut -d. -f1 | tr -cd '0-9')
+
+if [ -z "$compose_major" ] || [ "$compose_major" -lt 2 ]; then
+  echo "docker compose version 2 or higher is required (found: $compose_version)."
+  echo "Please upgrade Docker / Docker Compose: https://docs.docker.com/compose/install/"
+  exit 1
 fi
 echo "Download latest WordPress..."
 wget -O - https://wordpress.org/latest.tar.gz | tar zxv
