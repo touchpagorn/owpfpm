@@ -25,28 +25,35 @@ RUN sed -i 's/^#\(.*community\)/\1/' /etc/apk/repositories || true \
     && docker-php-ext-enable redis mongodb memcached imagick
 
 # Stage 2: Final image
+# Stage 2: Final image
 FROM php:8.2-fpm-alpine
 
 ENV TIMEZONE=Asia/Bangkok
 
-# Runtime dependencies only
-# Note: ImageMagick runtime libraries are needed for the imagick PHP extension
-# Enable community repository for ImageMagick packages
+# เพิ่ม Runtime dependencies ที่ extension เรียกใช้
 RUN sed -i 's/^#\(.*community\)/\1/' /etc/apk/repositories || true \
     && apk update \
     && apk add --no-cache \
-        tzdata imagemagick \
+        tzdata \
+        imagemagick \
+        # --- เพิ่มบรรทัดเหล่านี้ ---
+        libpng \
+        libjpeg-turbo \
+        libwebp \
+        freetype \
+        icu-libs \
+        libzip \
+        libmemcached \
+        libstdc++ \
+        # -----------------------
     && cp /usr/share/zoneinfo/${TIMEZONE} /etc/localtime \
     && echo "${TIMEZONE}" > /etc/timezone \
     && (find /etc/ImageMagick* -name "policy.xml" 2>/dev/null | xargs sed -i 's/<policy domain=.*name=.*rights=.*pattern=.*>//g' || true)
 
-# Copy compiled extensions from builder
+# Copy compiled extensions and configs
 COPY --from=builder /usr/local/lib/php/extensions /usr/local/lib/php/extensions
 COPY --from=builder /usr/local/etc/php/conf.d /usr/local/etc/php/conf.d
 
-# Optional: Copy custom config
-COPY ./config/php.ini /usr/local/etc/php/php.ini
-COPY ./config/www.conf /usr/local/etc/php-fpm.d/www.conf
 
 WORKDIR /var/www/html
 CMD ["php-fpm"]
