@@ -1,6 +1,7 @@
 FROM debian:bookworm-slim
 
-ARG OPENRESTY_VERSION=1.21.4.1
+
+ARG OPENRESTY_VERSION=1.25.3.2
 ENV OPENRESTY_PREFIX=/opt/openresty
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -8,17 +9,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libpcre3-dev libssl-dev zlib1g-dev libreadline-dev libncurses-dev perl \
     && mkdir -p /root/ngx_openresty \
     && cd /root/ngx_openresty \
-    && wget -O ngx_cache_purge.tar.gz https://github.com/FRiCKLE/ngx_cache_purge/archive/2.3.tar.gz \
+    # ปรับมาใช้ ngx_cache_purge ตัวที่รองรับ Nginx Core เวอร์ชันใหม่ๆ ได้สมบูรณ์ขึ้น
+    && wget -O ngx_cache_purge.tar.gz https://github.com/nginx-modules/ngx_cache_purge/archive/refs/tags/2.5.1.tar.gz \
     && wget -O openresty.tar.gz https://openresty.org/download/openresty-${OPENRESTY_VERSION}.tar.gz \
     && tar -zxvf ngx_cache_purge.tar.gz \
     && tar -xzvf openresty.tar.gz \
     && cd openresty-${OPENRESTY_VERSION} \
     && ./configure \
         --prefix=$OPENRESTY_PREFIX \
-        --add-module=/root/ngx_openresty/ngx_cache_purge-2.3 \
+        --add-module=/root/ngx_openresty/ngx_cache_purge-2.5.1 \
         --with-luajit \
         --with-pcre-jit \
-        --with-ipv6 \
         --with-http_stub_status_module \
         --with-http_ssl_module \
         --with-http_flv_module \
