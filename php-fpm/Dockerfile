@@ -1,42 +1,39 @@
 # Stage 1: Build extensions
-FROM php:8.2-fpm-alpine AS builder
+FROM php:8.3-fpm-alpine AS builder
 
 ENV TIMEZONE=Asia/Bangkok
 
-# Install build dependencies
-# Enable community repository for ImageMagick packages
-RUN sed -i 's/^#\(.*community\)/\1/' /etc/apk/repositories || true \
-    && apk update \
-    && apk add --no-cache --virtual .build-deps \
-        autoconf gcc g++ make pkgconfig \
-        libjpeg-turbo-dev libpng-dev libwebp-dev freetype-dev \
-        icu-dev libzip-dev libxml2-dev curl-dev oniguruma-dev \
-        imagemagick-dev libmemcached-dev openssl-dev \
-    && apk add --no-cache tzdata imagemagick \
-    && cp /usr/share/zoneinfo/${TIMEZONE} /etc/localtime \
-    && echo "${TIMEZONE}" > /etc/timezone \
-    && docker-php-ext-configure gd \
-        --with-jpeg \
-        --with-webp \
-        --with-freetype \
-    && docker-php-ext-install -j$(nproc) \
-        gd pdo_mysql opcache mysqli calendar intl exif zip mbstring \
-    && pecl install redis mongodb memcached imagick \
-    && docker-php-ext-enable redis mongodb memcached imagick
+# ใช้สคริปต์ช่วยติดตั้ง Extension เพื่อความแม่นยำและลดข้อผิดพลาดเรื่อง dependencies
+ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
+
+RUN chmod +x /usr/local/bin/install-php-extensions && \
+    install-php-extensions \
+        gd \
+        pdo_mysql \
+        opcache \
+        mysqli \
+        calendar \
+        intl \
+        exif \
+        zip \
+        mbstring \
+        redis \
+        mongodb \
+        memcached \
+        imagick
 
 # Stage 2: Final image
-# Stage 2: Final image
-FROM php:8.2-fpm-alpine
+FROM php:8.3-fpm-alpine
 
 ENV TIMEZONE=Asia/Bangkok
 
-# เพิ่ม Runtime dependencies ที่ extension เรียกใช้
+# เปิดใช้งาน community repository สำหรับพวกแอปพลิเคชันทั่วไป
 RUN sed -i 's/^#\(.*community\)/\1/' /etc/apk/repositories || true \
     && apk update \
     && apk add --no-cache \
         tzdata \
         imagemagick \
-        # --- เพิ่มบรรทัดเหล่านี้ ---
+        # ติดตั้ง runtime libraries ที่จำเป็น (ปรับปรุงให้เข้ากับ Alpine ยุคใหม่)
         libpng \
         libjpeg-turbo \
         libwebp \
@@ -45,15 +42,13 @@ RUN sed -i 's/^#\(.*community\)/\1/' /etc/apk/repositories || true \
         libzip \
         libmemcached \
         libstdc++ \
-        # -----------------------
     && cp /usr/share/zoneinfo/${TIMEZONE} /etc/localtime \
     && echo "${TIMEZONE}" > /etc/timezone \
     && (find /etc/ImageMagick* -name "policy.xml" 2>/dev/null | xargs sed -i 's/<policy domain=.*name=.*rights=.*pattern=.*>//g' || true)
 
-# Copy compiled extensions and configs
+# Copy compiled extensions and configs จาก Stage 1
 COPY --from=builder /usr/local/lib/php/extensions /usr/local/lib/php/extensions
 COPY --from=builder /usr/local/etc/php/conf.d /usr/local/etc/php/conf.d
-
 
 WORKDIR /var/www/html
 CMD ["php-fpm"]

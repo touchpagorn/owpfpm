@@ -73,6 +73,28 @@ wget -O - https://wordpress.org/latest.tar.gz | tar zxv
 mv wordpress html
 cp config/source/index.html html/index.html
 
+
+# กำหนดเส้นทางไปหาไฟล์ wp-config.php (ปรับเปลี่ยนให้ตรงกับโฟลเดอร์ในเครื่องของคุณ)
+WP_CONFIG_PATH="./html/wp-config.php"
+
+# ตรวจสอบก่อนว่าเคยใส่คอนฟิก Redis ไปหรือยัง เพื่อป้องกันการแทรกซ้ำซ้อนเวลาสั่งรันสคริปต์ซ้ำ
+if ! grep -q "WP_REDIS_HOST" "$WP_CONFIG_PATH"; then
+    echo "Adding Redis configuration to wp-config.php..."
+
+    # ใช้ sed ค้นหาข้อความสิ้นสุดการแก้ไข แล้วแทรกโค้ด Redis ไว้ก่อนหน้าบรรทัดนั้น
+    sed -i "/\/\* That's all, stop editing! Happy publishing. \*\//i \\
+define( 'WP_REDIS_HOST', 'wp-redis' );\\
+define( 'WP_REDIS_PORT', 6379 );\\
+" "$WP_CONFIG_PATH"
+
+    echo "Redis configuration added successfully."
+else
+    echo "Redis configuration already exists in wp-config.php. Skipping."
+fi
+
+
+
+
 echo "Create a WordPress service."
 docker compose up -d
 #mypassword=$(grep MYSQL_ROOT_PASSWORD docker-compose.yml|awk -F\= '{print $2}')
