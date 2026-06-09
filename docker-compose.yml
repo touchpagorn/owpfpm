@@ -75,7 +75,7 @@ secrets:
 
 volumes:
   mariadb_data: {}
-
+  redis_data: {}
 networks:
   frontend:
     driver: bridge
