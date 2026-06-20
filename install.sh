@@ -71,25 +71,48 @@ fi
 echo "Download latest WordPress..."
 wget -O - https://wordpress.org/latest.tar.gz | tar zxv
 mv wordpress html
-cp config/source/index.html html/index.html
 
 
-# กำหนดเส้นทางไปหาไฟล์ wp-config.php (ปรับเปลี่ยนให้ตรงกับโฟลเดอร์ในเครื่องของคุณ)
+
+# กำหนดเส้นทางไปหาไฟล์ wp-config.php
 WP_CONFIG_PATH="./html/wp-config.php"
+WP_CONFIG_SAMPLE_PATH="./html/wp-config-sample.php"
+
+# ถ้ายังไม่มีไฟล์ wp-config.php ให้สร้างจาก sample และตั้งค่า Database อัตโนมัติ
+if [ ! -f "$WP_CONFIG_PATH" ]; then
+    if [ -f "$WP_CONFIG_SAMPLE_PATH" ]; then
+        echo "Creating wp-config.php from template and configuring database..."
+        cp "$WP_CONFIG_SAMPLE_PATH" "$WP_CONFIG_PATH"
+        
+        # แทนที่ค่าคอนฟิก Database และ Host ด้วยค่าที่ป้อนเข้ามา
+        sed -i "s|database_name_here|$db_name|g" "$WP_CONFIG_PATH"
+        sed -i "s|username_here|$db_name|g" "$WP_CONFIG_PATH"
+        sed -i "s|password_here|$user_password|g" "$WP_CONFIG_PATH"
+        sed -i "s|localhost|db|g" "$WP_CONFIG_PATH"
+        sed -i "s|table_prefix = 'wp_';|table_prefix = 'wpx_';|g" "$WP_CONFIG_PATH"
+
+    else
+        echo "[WARNING] wp-config-sample.php not found. Cannot create wp-config.php automatically."
+    fi
+fi
 
 # ตรวจสอบก่อนว่าเคยใส่คอนฟิก Redis ไปหรือยัง เพื่อป้องกันการแทรกซ้ำซ้อนเวลาสั่งรันสคริปต์ซ้ำ
-if ! grep -q "WP_REDIS_HOST" "$WP_CONFIG_PATH"; then
-    echo "Adding Redis configuration to wp-config.php..."
+if [ -f "$WP_CONFIG_PATH" ]; then
+    if ! grep -q "WP_REDIS_HOST" "$WP_CONFIG_PATH"; then
+        echo "Adding Redis configuration to wp-config.php..."
 
-    # ใช้ sed ค้นหาข้อความสิ้นสุดการแก้ไข แล้วแทรกโค้ด Redis ไว้ก่อนหน้าบรรทัดนั้น
-    sed -i "/\/\* That's all, stop editing! Happy publishing. \*\//i \\
+        # ใช้ sed ค้นหาข้อความสิ้นสุดการแก้ไข แล้วแทรกโค้ด Redis ไว้ก่อนหน้าบรรทัดนั้น
+        sed -i "/\/\* That's all, stop editing! Happy publishing. \*\//i \\
 define( 'WP_REDIS_HOST', 'wp-redis' );\\
 define( 'WP_REDIS_PORT', 6379 );\\
 " "$WP_CONFIG_PATH"
 
-    echo "Redis configuration added successfully."
+        echo "Redis configuration added successfully."
+    else
+        echo "Redis configuration already exists in wp-config.php. Skipping."
+    fi
 else
-    echo "Redis configuration already exists in wp-config.php. Skipping."
+    echo "[WARNING] wp-config.php does not exist. Skipping Redis configuration."
 fi
 
 
