@@ -3,7 +3,12 @@ services:
     build:
       context: ./openresty
     container_name: web
-    restart: always
+    restart: "on-failure:5"
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
     environment:
       - ENABLE_SSL=true
     ports:
@@ -11,10 +16,10 @@ services:
       - "443:443"
     volumes:
       - ./html:/var/www/html
-      - ./config/ssl/certificate.crt:/opt/openresty/nginx/conf/ssl/certificate.crt
-      - ./config/ssl/private.key:/opt/openresty/nginx/conf/ssl/private.key
-      - ./openresty/config/nginx.conf:/opt/openresty/nginx/conf/nginx.conf
-      - ./openresty/config/owpfpm:/opt/openresty/nginx/conf/owpfpm
+      - ./config/ssl/certificate.crt:/opt/openresty/nginx/conf/ssl/certificate.crt:ro
+      - ./config/ssl/private.key:/opt/openresty/nginx/conf/ssl/private.key:ro
+      - ./openresty/config/nginx.conf:/opt/openresty/nginx/conf/nginx.conf:ro
+      - ./openresty/config/owpfpm:/opt/openresty/nginx/conf/owpfpm:ro
       - ./logs/openresty:/opt/openresty/nginx/logs
 
     depends_on:
@@ -27,7 +32,12 @@ services:
     build:
       context: ./php-fpm
     container_name: php-fpm
-    restart: always
+    restart: "on-failure:5"
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 1G
     volumes:
       - ./html:/var/www/html
       - ./php-fpm/config/php.ini:/usr/local/etc/php/php.ini
@@ -40,7 +50,13 @@ services:
   db:
     image: mariadb:11.8.2
     container_name: db
-    restart: always
+    restart: "on-failure:5"
+    command: --local-infile=0 --skip-symbolic-links --secure-file-priv=/var/lib/mysql-files
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 1.5G
     environment:
       MARIADB_HOST: db
       MARIADB_USER_FILE: /run/secrets/db_name
@@ -59,7 +75,12 @@ services:
   redis:
     image: redis:7-alpine
     container_name: wp-redis
-    restart: always
+    restart: "on-failure:5"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
     volumes:
       - redis_data:/data
     networks:
