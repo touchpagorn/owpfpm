@@ -1,34 +1,34 @@
-# Changelog
+# บันทึกการเปลี่ยนแปลง (Changelog)
 
-All notable changes to this project will be documented in this file.
+การเปลี่ยนแปลงที่สำคัญทั้งหมดในโปรเจกต์นี้จะถูกบันทึกไว้ในไฟล์นี้
 
-## [Unreleased] - 2026-06-21
+## [ทั่วไป] - 2026-06-21
 
-### Security Hardening (cyfence CIS Benchmark V3 Compliance)
+### การยกระดับความปลอดภัย (ผ่านเกณฑ์มาตรฐาน cyfence CIS Benchmark V3)
 
-#### Docker & Orchestration (`docker-compose.yml`)
-- **Resource Limits**: Configured CPU and Memory limits for all containers (`web`, `php-fpm`, `db`, `redis`) to prevent DoS attacks.
-- **Restart Policy**: Modified container restart policies from `always` to `"on-failure:5"` to mitigate endless crash-loop resource drain.
-- **MariaDB Security**: Added database startup parameters `--local-infile=0`, `--skip-symbolic-links`, and `--secure-file-priv=/var/lib/mysql-files` to disable risky features and file exports.
-- **Configuration Protection**: Mounted SSL keys, certificates, and OpenResty configuration files as read-only (`:ro`) to prevent modification by compromised worker processes.
+#### ส่วนของ Docker & Orchestration (`docker-compose.yml`)
+- **การจำกัดทรัพยากร (Resource Limits)**: กำหนดขีดจำกัดการใช้งาน CPU และ Memory สำหรับทุกบริการ (`web`, `php-fpm`, `db`, `redis`) เพื่อป้องกันการโจมตีประเภท DoS
+- **นโยบายการเริ่มทำงานใหม่ (Restart Policy)**: เปลี่ยนนโยบายการทำงานของ Container ใหม่จาก `always` เป็น `"on-failure:5"` เพื่อป้องกันไม่ให้เกิดลูปการบูตเครื่องซ้ำจนทรัพยากรระบบหมดเมื่อเกิดความเสียหาย
+- **ความปลอดภัยของฐานข้อมูล MariaDB**: เพิ่มพารามิเตอร์เริ่มต้นการทำงาน `--local-infile=0`, `--skip-symbolic-links` และ `--secure-file-priv=/var/lib/mysql-files` เพื่อปิดการใช้งานฟังก์ชันการโหลดไฟล์และสกัดสิทธิ์ที่มีความเสี่ยงสูง
+- **การป้องกันการแก้ไขไฟล์คอนฟิก (Configuration Protection)**: เชื่อมต่อ (Mount) ไฟล์ SSL key, certificate และไฟล์ตั้งค่าต่าง ๆ ของ OpenResty แบบให้อ่านได้อย่างเดียว (`:ro`) เพื่อป้องกันการดัดแปลงแก้ไขหากระบบถูกเจาะผ่าน Worker Process
 
-#### Web Server (`openresty/config/nginx.conf`)
-- **Worker Process Isolation**: Explicitly set Nginx workers to run under the unprivileged `www-data` user instead of root/default.
-- **Access Logging**: Enabled access logs (`access_log logs/access.log main;`) for audits.
-- **Slowloris Protection**: Reduced request/connection timeouts from `360s` to safer limits (`client_header_timeout 15`, `client_body_timeout 15`, `keepalive_timeout 60`).
-- **DoS Protection**: Restricted maximum body upload size to `512M` (previously unlimited `0`) and lowered default header buffer configurations.
-- **HTTP Method Restrictions**: Blocked dangerous HTTP methods (allowing only `GET`, `POST`, `HEAD`, `OPTIONS`, `PUT`, `DELETE`).
-- **Brute-Force Rate Limiting**: Added a rate limit zone (`wp_login` at 2r/s, burst 5) specifically protecting `/wp-login.php` and `/xmlrpc.php`.
+#### ส่วนของ Web Server (`openresty/config/nginx.conf`)
+- **การแยกสิทธิ์โปรเซส (Worker Process Isolation)**: กำหนดให้โปรเซสทำงานภายใต้ User `www-data` ซึ่งไม่มีสิทธิ์พิเศษในระบบ แทนการรันด้วยสิทธิ์ root
+- **การบันทึกประวัติการใช้งาน (Access Logging)**: เปิดใช้งานการเก็บบันทึกประวัติการเข้าใช้งานระบบ (`access_log logs/access.log main;`) เพื่อใช้ในการตรวจสอบทางความมั่นคงปลอดภัย (Audit Trail)
+- **การป้องกันการโจมตีแบบ Slowloris**: ลดเวลาการรอหมดอายุการเชื่อมต่อจากเดิม `360 วินาที` ลงเหลือค่าที่เหมาะสมเพื่อความปลอดภัย (`client_header_timeout 15`, `client_body_timeout 15`, `keepalive_timeout 60`)
+- **การป้องกันการโจมตีประเภท DoS**: จำกัดขนาดการอัปโหลดไฟล์สูงสุดไว้ที่ `512M` (จากเดิมตั้งค่าแบบไม่จำกัด `0`) และจำกัดพื้นที่บัฟเฟอร์ของ Header
+- **การจำกัดการเรียกใช้งาน HTTP Methods**: อนุญาตเฉพาะ HTTP Methods ที่จำเป็นต่อแอปพลิเคชันหลักเท่านั้น (`GET`, `POST`, `HEAD`, `OPTIONS`, `PUT`, `DELETE`) และบล็อกคำสั่งที่มีความเสี่ยงอื่น ๆ
+- **การจำกัดความถี่การเข้าใช้งาน (Rate Limiting)**: ตั้งค่าการจำกัดความถี่การส่งคำร้องขอเข้าสู่หน้าอ่อนไหว `/wp-login.php` และ `/xmlrpc.php` (สูงสุด 2 คำสั่งต่อวินาที, คิวสะสมสูงสุด 5 คำสั่ง) เพื่อป้องกันการโจมตีแบบ Brute-Force
 
-#### PHP-FPM Configuration (`php-fpm/config/php.ini`)
-- **Version Masking**: Masked PHP version headers with `expose_php = Off`.
-- **Dangerous Functions**: Disabled SUID/OS execution functions (`exec`, `shell_exec`, `passthru`, `system`, `proc_open`, `popen`, `show_source`, `symlink`).
-- **Directory Traversal Prevention**: Confined file system access using `open_basedir = /var/www/html:/tmp`.
-- **Remote File Inclusion (RFI)**: Disabled remote file inclusion with `allow_url_include = Off`.
-- **Session Cookie Hardening**: Added secure session flags (`session.cookie_httponly = 1`, `session.cookie_secure = 1`, `session.cookie_samesite = Lax`, `session.use_strict_mode = 1`).
+#### ส่วนของการตั้งค่า PHP-FPM (`php-fpm/config/php.ini`)
+- **การซ่อนข้อมูลเวอร์ชัน (Version Masking)**: ปิดการเปิดเผยเวอร์ชันการรันระบบของ PHP ใน HTTP Header ด้วย `expose_php = Off`
+- **การปิดฟังก์ชันระบบที่เป็นอันตราย (Dangerous Functions)**: ยกเลิกการเรียกใช้งานฟังก์ชันระบบที่สามารถใช้รันคำสั่ง OS-level ได้ เช่น `exec`, `shell_exec`, `passthru`, `system`, `proc_open`, `popen`, `show_source`, `symlink`
+- **การป้องกันการเข้าถึงไฟล์ระบบ (Directory Traversal)**: จำกัดพื้นที่ทำงานของระบบด้วย `open_basedir = /var/www/html:/tmp`
+- **การควบคุมการเรียกใช้งานไฟล์ภายนอก (Remote File Inclusion)**: ปิดการทำงานรีโมทโค้ดข้ามเซิร์ฟเวอร์ด้วย `allow_url_include = Off`
+- **การยกระดับความปลอดภัยของ Session Cookie**: เปิดแฟล็กความปลอดภัยของคุกกี้ระบบ (`session.cookie_httponly = 1`, `session.cookie_secure = 1`, `session.cookie_samesite = Lax`, `session.use_strict_mode = 1`) เพื่อป้องกันการถูกดักข้อมูลหรือปลอมแปลงเซสชัน
 
-### Automation & Installation (`install.sh`)
-- **Automated Configuration**: Added logic to automatically create `wp-config.php` from `wp-config-sample.php` during initial installation.
-- **Database Connection Setup**: Automatically configures the database host to `db`, database name, user, and password parameters dynamically based on user input.
-- **Table Prefix Customization**: Modified default database table prefix from `wp_` to `wpx_` in `wp-config.php`.
-- **Robust Redis Config Append**: Wrapped Redis settings injection in existence checks to avoid installer errors on subsequent runs.
+### การพัฒนาสคริปต์ช่วยติดตั้ง (`install.sh`)
+- **การสร้างคอนฟิกอัตโนมัติ**: เพิ่มความสามารถในการสร้างไฟล์ `wp-config.php` จากไฟล์ต้นแบบ `wp-config-sample.php` โดยอัตโนมัติในตอนเริ่มติดตั้ง
+- **การตั้งค่าเชื่อมต่อฐานข้อมูลอัตโนมัติ**: นำข้อมูลที่ผู้ใช้ป้อนเข้ามาตอนเริ่มรันสคริปต์ (ชื่อฐานข้อมูล, ชื่อผู้ใช้, รหัสผ่าน และ host ที่เป็น `db`) ไปเขียนตั้งค่าในไฟล์ `wp-config.php` ให้อัตโนมัติ
+- **การกำหนด Table Prefix เริ่มต้น**: ปรับเปลี่ยนการตั้งค่าชื่อย่อฐานข้อมูลของ WordPress จากค่าเริ่มต้น `wp_` ให้กลายเป็น `wpx_`
+- **การตรวจสอบความซ้ำซ้อนการแทรกคอนฟิก Redis**: เพิ่มเงื่อนไขเพื่อเช็คความปลอดภัยก่อนที่จะเขียนคำสั่งตั้งค่า Redis เพื่อไม่ให้เกิดการบันทึกทับซ้อนกรณีที่รันสคริปต์ติดตั้งซ้ำ
