@@ -2,6 +2,23 @@
 
 การเปลี่ยนแปลงที่สำคัญทั้งหมดในโปรเจกต์นี้จะถูกบันทึกไว้ในไฟล์นี้
 
+## [ทั่วไป / Web Server / php-fpm] - 2026-07-01
+
+### การแก้ไขและปรับปรุง Extension ของ PHP
+- **แก้ไขปัญหาการโหลด PHP Extensions (GD, Redis, MongoDB, Imagick, etc.)**:
+  - เปลี่ยนโครงสร้าง Dockerfile ของ `php-fpm` จาก Multi-stage build ที่เกิดปัญหาสิทธิ์และไดนามิกไลบรารีไม่ครบถ้วน เป็นการติดตั้งผ่าน `install-php-extensions` โดยตรงในคอนเทนเนอร์หลัก
+  - นำเข้าเครื่องมือติดตั้ง `install-php-extensions` จากอิมเมจ `mlocati/php-extension-installer:latest` แทนการดาวน์โหลดผ่านเครือข่าย เพื่อป้องกันปัญหา Timeout และเพิ่มความเร็วในการบิลด์
+  - ทำให้ Extension ต่าง ๆ โดยเฉพาะ GD (และไลบรารีเสริมอื่น ๆ) สามารถทำงานได้อย่างถูกต้องและไม่มี Warning ตอนเริ่มทำงานของ PHP-FPM
+
+### การปรับปรุงความปลอดภัยและนโยบาย Content Security Policy (CSP)
+- **เพิ่ม Content-Security-Policy (CSP) Header ใน Web Server**:
+  - กำหนดนโยบาย CSP ใน [security_headers.conf]
+  - เพิ่มความยินยอมให้ใช้ `'unsafe-inline'` และ `'unsafe-eval'` ใน `script-src` ของนโยบาย เพื่อรักษาความสามารถในการทำงานของสคริปต์หลักในระบบ WordPress (เช่น Gutenberg Editor, AJAX, jQuery และฟีเจอร์อื่นๆ) ให้ไม่ถูกเว็บบราว์เซอร์บล็อกการประมวลผลคำสั่งที่เป็น string หรือ inline scripts
+
+### การแก้ไขข้อผิดพลาด FastCGI & PHP Configuration
+- **แก้ไขข้อผิดพลาด Passing INI directive through FastCGI (unable to set 'mysql.connect_timeout')**:
+  - แนะนำการแก้ไขการกำหนดค่าใน [nginx.conf] โดยเปลี่ยนการเรียกใช้ค่าคอนฟิก `mysql.connect_timeout` (ซึ่งไม่มีอยู่แล้วใน PHP 8.x) ให้เป็น `mysqli.connect_timeout` หรือนำออก เนื่องจากใน PHP 8.3 โครงสร้างส่วนเชื่อมต่อฐานข้อมูลได้ตัดโมดูล `mysql` ตัวเก่าออกไปแล้ว คงเหลือเพียง `mysqli` และ `pdo_mysql` เท่านั้น
+
 ## [ทั่วไป] - 2026-06-21
 
 ### การยกระดับความปลอดภัย (ผ่านเกณฑ์มาตรฐาน cyfence CIS Benchmark V3)
