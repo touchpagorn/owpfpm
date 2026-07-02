@@ -115,7 +115,23 @@ else
     echo "[WARNING] wp-config.php does not exist. Skipping Redis configuration."
 fi
 
+# ตรวจสอบก่อนว่าเคยใส่ DISALLOW_FILE_EDIT ไปหรือยัง เพื่อป้องกันการแทรกซ้ำซ้อนเวลาสั่งรันสคริปต์ซ้ำ
+if [ -f "$WP_CONFIG_PATH" ]; then
+    if ! grep -q "DISALLOW_FILE_EDIT" "$WP_CONFIG_PATH"; then
+        echo "Adding DISALLOW_FILE_EDIT configuration to wp-config.php..."
 
+        # ใช้ sed ค้นหาข้อความสิ้นสุดการแก้ไข แล้วแทรกโค้ดไว้ก่อนหน้าบรรทัดนั้น
+        sed -i "/\/\* That's all, stop editing! Happy publishing. \*\//i \\
+define('DISALLOW_FILE_EDIT', true);\\
+" "$WP_CONFIG_PATH"
+
+        echo "DISALLOW_FILE_EDIT configuration added successfully."
+    else
+        echo "DISALLOW_FILE_EDIT configuration already exists in wp-config.php. Skipping."
+    fi
+else
+    echo "[WARNING] wp-config.php does not exist. Skipping DISALLOW_FILE_EDIT configuration."
+fi
 
 
 echo "Create a WordPress service."
