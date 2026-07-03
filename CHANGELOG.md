@@ -21,7 +21,7 @@
 
 ## [ทั่วไป] - 2026-06-21
 
-### การยกระดับความปลอดภัย (ผ่านเกณฑ์มาตรฐาน cyfence CIS Benchmark V3)
+### การยกระดับความปลอดภัย (ผ่านเกณฑ์มาตรฐาน CIS Benchmark)
 
 #### ส่วนของ Docker & Orchestration (`docker-compose.yml`)
 - **การจำกัดทรัพยากร (Resource Limits)**: กำหนดขีดจำกัดการใช้งาน CPU และ Memory สำหรับทุกบริการ (`web`, `php-fpm`, `db`, `redis`) เพื่อป้องกันการโจมตีประเภท DoS
