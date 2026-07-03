@@ -168,24 +168,6 @@ http {
             return 403;
         }
 
-        location /cyfence-digital-camp-2024 {
-            rewrite ^/cyfence-digital-camp-2024(.*)$ https://{{CANONICAL_DOMAIN}}/nt-cyfence-digital-camp-2024/;
-        }
-        location /links{
-            rewrite ^/links(.*)$ https://linktr.ee/cyfence;
-        }
     }
 
-    # Metrics endpoint for Prometheus nginx-exporter
-    server {
-        listen 8888;
-        server_name localhost;
-        location /nginx_status {
-            stub_status on;
-            access_log off;
-            allow 172.16.0.0/12;
-            allow 127.0.0.1;
-            deny all;
-        }
-    }
 }
