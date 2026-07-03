@@ -34,7 +34,7 @@ http {
     proxy_buffer_size 128k;
     proxy_busy_buffers_size 256k;
     lua_package_path "/opt/openresty/lualib/?.lua;;";
-    
+
     include /opt/openresty/nginx/conf/owpfpm/security_headers.conf;
     include /opt/openresty/nginx/conf/owpfpm/ssl_enabled.conf;
 
@@ -48,20 +48,24 @@ http {
         "~^https?://$http_host$" "$http_origin";
     }
 
-    # 🔁 HTTP redirect to HTTPS
+    # HTTP redirect to HTTPS
+
     server {
         listen 80 default_server;
-        server_name _;
-        root /var/www/html;
-        index index.html;
-        return 301 https://$host$request_uri;
+#        server_name _;
+        server_name {{HTTP_SERVER_NAMES}};
+        return 301 https://{{CANONICAL_DOMAIN}}/$request_uri;
+#        root /var/www/html;
+#        index index.html;
+#        return 301 https://$host$request_uri;
+
     }
 
-    # 🔐 HTTPS server block
+    # HTTPS server block
     server {
         listen 443 ssl default_server;
         http2 on; # 💡 แยกคำสั่งเปิด HTTP/2
-        server_name _;
+        server_name {{HTTPS_SERVER_NAMES}};
 
         root /var/www/html;
         index index.php index.html;
@@ -114,10 +118,10 @@ http {
         # Apply rate limiting to login page and XML-RPC endpoint to prevent brute-force attacks
         location ~* ^/(wp-login\.php|xmlrpc\.php)$ {
             limit_req zone=wp_login burst=5 nodelay;
-            
+
             more_clear_headers 'Server:';
             more_clear_headers 'X-Powered-By:';
-            
+
             include fastcgi.conf;
             include fastcgi_params;
             fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
@@ -142,7 +146,7 @@ http {
 
             include fastcgi.conf;
             include fastcgi_params;
-            
+
             # บังคับระบุพิกัดไฟล์ให้แม่นยำเพื่อป้องกันความสับสนของแอปพลิเคชัน
             fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
 
@@ -153,6 +157,35 @@ http {
             fastcgi_intercept_errors on;
             fastcgi_pass php-fpm:9000;
             fastcgi_max_temp_file_size 0;
+        }
+        location = /xmlrpc.php {deny all;}
+        location = /wp-admin/install.php { deny all; }
+
+        error_page   403  /error/403.html;
+
+        location /wp-content/uploads/dlm_uploads {
+            deny all;
+            return 403;
+        }
+
+        location /cyfence-digital-camp-2024 {
+            rewrite ^/cyfence-digital-camp-2024(.*)$ https://{{CANONICAL_DOMAIN}}/nt-cyfence-digital-camp-2024/;
+        }
+        location /links{
+            rewrite ^/links(.*)$ https://linktr.ee/cyfence;
+        }
+    }
+
+    # Metrics endpoint for Prometheus nginx-exporter
+    server {
+        listen 8888;
+        server_name localhost;
+        location /nginx_status {
+            stub_status on;
+            access_log off;
+            allow 172.16.0.0/12;
+            allow 127.0.0.1;
+            deny all;
         }
     }
 }

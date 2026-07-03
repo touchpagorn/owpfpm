@@ -14,6 +14,25 @@ DAYS_VALID=365
 # Create directory if it doesn't exist
 mkdir -p "$SSL_DIR"
 
+# Generate nginx.conf from template only if it doesn't already exist
+NGINX_CONF="./openresty/config/nginx.conf"
+NGINX_TEMPLATE="./openresty/config/nginx.conf.template"
+
+if [ -f "$NGINX_CONF" ]; then
+    echo "[INFO] nginx.conf already exists. Skipping generation."
+else
+    read -p "Please enter the canonical domain to redirect to (e.g. www.example.com): " canonical_domain
+    read -p "Please enter server names for the HTTP redirect block, space separated (e.g. example.com www.example.com): " http_server_names
+    read -p "Please enter server names for the HTTPS block, space separated (e.g. example.com www.example.com): " https_server_names
+
+    sed -e "s|{{CANONICAL_DOMAIN}}|$canonical_domain|g" \
+        -e "s|{{HTTP_SERVER_NAMES}}|$http_server_names|g" \
+        -e "s|{{HTTPS_SERVER_NAMES}}|$https_server_names|g" \
+        "$NGINX_TEMPLATE" > "$NGINX_CONF"
+
+    echo "[INFO] nginx.conf generated at: $NGINX_CONF"
+fi
+
 # Generate cert only if not already present
 if [ -f "$KEY_FILE" ] && [ -f "$CERT_FILE" ]; then
     echo "[INFO] SSL certificate already exists. Skipping generation."
