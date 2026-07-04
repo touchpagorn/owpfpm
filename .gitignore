@@ -3,3 +3,4 @@ config/secrets/*
 config/ssl/*
 openresty/config/nginx.conf
 html/*
+.claude/*
