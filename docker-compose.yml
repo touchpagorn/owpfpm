@@ -7,8 +7,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 512M
+          cpus: '2'
+          memory: 1G
     environment:
       - ENABLE_SSL=true
     ports:

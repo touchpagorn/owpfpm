@@ -1,8 +1,8 @@
-worker_processes auto;
+worker_processes 2;
 #pid             logs/nginx.pid;
 user            www-data;
 
-events { worker_connections  200000; }
+events { worker_connections  4096; }
 
 http {
     include       mime.types;
