@@ -51,7 +51,10 @@ services:
     image: mariadb:11.8.2
     container_name: db
     restart: "on-failure:5"
-    command: --local-infile=0 --skip-symbolic-links --secure-file-priv=/var/lib/mysql-files
+    command:
+      - --local-infile=0
+      - --skip-symbolic-links
+      - --secure-file-priv=
     deploy:
       resources:
         limits:
