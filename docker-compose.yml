@@ -26,7 +26,6 @@ services:
       - php-fpm
     networks:
       - frontend
-      - backend
 
   php-fpm:
     build:
@@ -46,6 +45,7 @@ services:
     depends_on:
       - db
     networks:
+      - frontend
       - backend
   db:
     image: mariadb:11.8.2

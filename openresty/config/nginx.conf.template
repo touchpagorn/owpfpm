@@ -73,6 +73,11 @@ http {
         charset utf-8;
         log_not_found off;
 
+        # Re-resolve php-fpm via Docker's embedded DNS instead of caching the IP
+        # for the lifetime of the worker (container IPs change on recreate)
+        resolver 127.0.0.11 valid=10s;
+        set $php_upstream php-fpm:9000;
+
         client_header_timeout   15;
         client_body_timeout     15;
         fastcgi_read_timeout    360;
@@ -130,7 +135,7 @@ http {
             fastcgi_send_timeout 180s;
             fastcgi_connect_timeout 1200s;
             fastcgi_intercept_errors on;
-            fastcgi_pass php-fpm:9000;
+            fastcgi_pass $php_upstream;
             fastcgi_max_temp_file_size 0;
         }
 
@@ -155,7 +160,7 @@ http {
             fastcgi_send_timeout 180s;
             fastcgi_connect_timeout 1200s;
             fastcgi_intercept_errors on;
-            fastcgi_pass php-fpm:9000;
+            fastcgi_pass $php_upstream;
             fastcgi_max_temp_file_size 0;
         }
         location = /xmlrpc.php {deny all;}
