@@ -133,7 +133,7 @@ http {
             fastcgi_param PHP_VALUE "upload_max_filesize=512M\npost_max_size=512M\nmemory_limit=512M\ndate.timezone=Asia/Bangkok";
             fastcgi_read_timeout 180s;
             fastcgi_send_timeout 180s;
-            fastcgi_connect_timeout 1200s;
+            fastcgi_connect_timeout 5s;
             fastcgi_intercept_errors on;
             fastcgi_pass $php_upstream;
             fastcgi_max_temp_file_size 0;
@@ -158,7 +158,7 @@ http {
             fastcgi_param PHP_VALUE "upload_max_filesize=512M\npost_max_size=512M\nmemory_limit=512M\ndate.timezone=Asia/Bangkok";
             fastcgi_read_timeout 180s;
             fastcgi_send_timeout 180s;
-            fastcgi_connect_timeout 1200s;
+            fastcgi_connect_timeout 5s;
             fastcgi_intercept_errors on;
             fastcgi_pass $php_upstream;
             fastcgi_max_temp_file_size 0;
