@@ -4,6 +4,15 @@ services:
       context: ./openresty
     container_name: web
     restart: "on-failure:5"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+      - SETUID
+      - SETGID
+      - CHOWN
     deploy:
       resources:
         limits:
