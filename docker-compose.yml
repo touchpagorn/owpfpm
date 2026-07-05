@@ -76,7 +76,7 @@ services:
     networks:
       - backend
   redis:
-    image: redis:7-alpine
+    image: redis:8.2.7-alpine
     container_name: wp-redis
     restart: "on-failure:5"
     deploy:
