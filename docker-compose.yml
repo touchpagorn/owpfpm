@@ -108,6 +108,7 @@ networks:
         - subnet: 172.23.0.0/24
   backend:
     driver: bridge
+    internal: true 
     ipam:
       config:
         - subnet: 172.23.1.0/24
