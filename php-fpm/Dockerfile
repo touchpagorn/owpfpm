@@ -28,8 +28,6 @@ RUN install-php-extensions \
     zip \
     mbstring \
     redis \
-    mongodb \
-    memcached \
     imagick
 
 WORKDIR /var/www/html
