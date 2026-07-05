@@ -1,0 +1,15 @@
+# ไฟล์นี้เป็นตัวอย่าง - copy เป็น security_headers.local.conf (ไม่ต้องใส่ .example)
+# แล้วแก้ตาม 3rd-party ที่เว็บของคุณใช้จริง (Google Analytics, Facebook Pixel, แผนที่, ฯลฯ)
+#
+# ไฟล์ security_headers.local.conf ถูก .gitignore ไว้แล้ว (ดู .gitignore)
+# เพราะแต่ละ deployment ใช้ 3rd-party ไม่เหมือนกัน จึงไม่ควร commit ทับ base policy ที่ใช้ร่วมกัน
+#
+# more_set_headers เขียนซ้ำ header ชื่อเดียวกัน จะ "ทับ" ค่าเดิมทั้งหมด (ไม่ใช่ผนวกเพิ่ม)
+# ดังนั้นให้ copy บรรทัด Content-Security-Policy เต็มจาก security_headers.conf มาแก้ตรงนี้
+# แล้วเพิ่มเฉพาะ domain ที่ต้องการต่อท้ายแต่ละ directive
+#
+# ตัวอย่าง: เพิ่ม Facebook Pixel และ Google Maps
+#
+# more_set_headers "Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://connect.facebook.net; style-src 'self' 'unsafe-inline' https://use.fontawesome.com https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' data: https:; connect-src 'self' https:; frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://www.google.com; frame-ancestors 'self';";
+#
+# ถ้าไม่ต้องการ override อะไรเลย ปล่อยไฟล์ security_headers.local.conf ให้ว่างไว้ได้ (nginx include ไฟล์ว่างได้ปกติ)

@@ -38,6 +38,9 @@ http {
     lua_package_path "/opt/openresty/lualib/?.lua;;";
 
     include /opt/openresty/nginx/conf/owpfpm/security_headers.conf;
+    # Override เฉพาะ deployment นี้ (เช่น 3rd-party script/style/frame เพิ่มเติม)
+    # ไฟล์นี้ถูก .gitignore ไว้ - ดู security_headers.local.conf.example
+    include /opt/openresty/nginx/conf/owpfpm/security_headers.local.conf;
     include /opt/openresty/nginx/conf/owpfpm/ssl_enabled.conf;
 
     # Rate limiting zone for WordPress login and XML-RPC to prevent brute force

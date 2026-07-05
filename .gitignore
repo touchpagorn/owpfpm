@@ -2,5 +2,6 @@ logs/*
 config/secrets/*
 config/ssl/*
 openresty/config/nginx.conf
+openresty/config/owpfpm/security_headers.local.conf
 html/*
 .claude/*

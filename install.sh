@@ -33,6 +33,17 @@ else
     echo "[INFO] nginx.conf generated at: $NGINX_CONF"
 fi
 
+# Create an empty local security-header override file if not already present
+# (nginx's `include` fails if the file is missing; each deployment edits its own
+# copy locally for 3rd-party domains, see security_headers.local.conf.example)
+LOCAL_HEADERS="./openresty/config/owpfpm/security_headers.local.conf"
+if [ -f "$LOCAL_HEADERS" ]; then
+    echo "[INFO] security_headers.local.conf already exists. Skipping generation."
+else
+    touch "$LOCAL_HEADERS"
+    echo "[INFO] Empty security_headers.local.conf created at: $LOCAL_HEADERS"
+fi
+
 # Generate cert only if not already present
 if [ -f "$KEY_FILE" ] && [ -f "$CERT_FILE" ]; then
     echo "[INFO] SSL certificate already exists. Skipping generation."
