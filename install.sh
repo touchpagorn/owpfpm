@@ -53,7 +53,7 @@ else
         -newkey rsa:2048 \
         -keyout "$KEY_FILE" \
         -out "$CERT_FILE" \
-        -subj "/C=TH/ST=Chonburi/L=Na Kluea/O=Touchpagorn/OU=Dev/CN=localhost"
+        -subj "/C=TH/ST=bkk/L=bkk/O=owpfpm/OU=Dev/CN=localhost"
     echo "[INFO] Certificate generated at: $CERT_FILE"
 fi
 
