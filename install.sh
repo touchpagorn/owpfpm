@@ -174,7 +174,7 @@ docker exec web sh -c "chown -R www-data:www-data /var/www/html"
 echo "done..."
 
 echo "====================="
-echo "WordPress site: $(hostname -I|awk '{print "http://"$1":8888"}')"
+echo "WordPress site: $(hostname -I|awk '{print "$canonical_domain"}')"
 echo "[Database info]"
 echo "db:   $db_name"
 echo "host: db"
@@ -182,5 +182,5 @@ echo "user: $db_name"
 echo "pass: $user_password"
 echo "====================="
 
-echo "Remove install.sh script."
+#echo "Remove install.sh script."
 #rm -f ./install.sh
