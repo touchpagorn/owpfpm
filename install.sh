@@ -121,6 +121,27 @@ if [ ! -f "$WP_CONFIG_PATH" ]; then
         sed -i "s|localhost|db|g" "$WP_CONFIG_PATH"
         sed -i "s|table_prefix = 'wp_';|table_prefix = 'wpx_';|g" "$WP_CONFIG_PATH"
 
+        # สร้าง Unique Authentication Keys and Salts จาก WordPress API แทนค่า default
+        echo "Generating unique authentication keys and salts..."
+        SALT=$(curl -s https://api.wordpress.org/secret-key/1.1/salt/)
+        if [ -n "$SALT" ]; then
+            while IFS= read -r salt_line; do
+                key=$(echo "$salt_line" | sed -n "s/define( '\([A-Z_]*\)'.*/\1/p")
+                if [ -n "$key" ]; then
+                    escaped_line=$(printf '%s' "$salt_line" | sed -e 's/[\&|]/\\&/g')
+                    sed -i "s|define( '$key',.*put your unique phrase here.*|$escaped_line|" "$WP_CONFIG_PATH"
+                fi
+            done <<< "$SALT"
+            echo "Unique keys and salts generated successfully from WordPress API."
+        else
+            echo "[WARNING] Failed to fetch keys from WordPress API. Generating locally instead."
+            for key in AUTH_KEY SECURE_AUTH_KEY LOGGED_IN_KEY NONCE_KEY AUTH_SALT SECURE_AUTH_SALT LOGGED_IN_SALT NONCE_SALT; do
+                random_value=$(openssl rand -base64 64 | tr -dc 'a-zA-Z0-9' | cut -c1-64)
+                sed -i "s|define( '$key',.*put your unique phrase here.*|define( '$key',         '$random_value' );|" "$WP_CONFIG_PATH"
+            done
+            echo "Unique keys and salts generated successfully (local fallback)."
+        fi
+
     else
         echo "[WARNING] wp-config-sample.php not found. Cannot create wp-config.php automatically."
     fi
@@ -174,7 +195,7 @@ docker exec web sh -c "chown -R www-data:www-data /var/www/html"
 echo "done..."
 
 echo "====================="
-echo "WordPress site: $(hostname -I|awk '{print "$canonical_domain"}')"
+echo "WordPress site: $canonical_domain"
 echo "[Database info]"
 echo "db:   $db_name"
 echo "host: db"
