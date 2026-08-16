@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Ask for confirmation
-printf "This will permanently delete ALL data for this project.\nType ALLDATADELETE to confirm: "
+printf "This will permanently delete ALL data (html , container and volume) for this project.\nType ALLDATADELETE to confirm: "
 read -r confirm
 
 case "$confirm" in

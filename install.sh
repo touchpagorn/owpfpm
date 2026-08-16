@@ -98,7 +98,7 @@ if [ -z "$compose_major" ] || [ "$compose_major" -lt 2 ]; then
   echo "Please upgrade Docker / Docker Compose: https://docs.docker.com/compose/install/"
   exit 1
 fi
-echo "Download latest WordPress..."
+echo "Download latest WordPress version form wordpress.org"
 wget -O - https://wordpress.org/latest.tar.gz | tar zxv
 mv wordpress html
 
