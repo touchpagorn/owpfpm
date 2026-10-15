@@ -5,3 +5,4 @@ openresty/config/nginx.conf
 openresty/config/owpfpm/security_headers.local.conf
 html/*
 .claude/*
+docker-compose.override.yml
