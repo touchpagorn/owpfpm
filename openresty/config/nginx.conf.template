@@ -68,8 +68,7 @@ http {
 
     # HTTPS server block
     server {
-        listen 443 ssl default_server;
-        http2 on; # 💡 แยกคำสั่งเปิด HTTP/2
+        listen 443 ssl http2 default_server;
         server_name {{HTTPS_SERVER_NAMES}};
 
         root /var/www/html;
