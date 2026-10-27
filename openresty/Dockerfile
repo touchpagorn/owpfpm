@@ -1,23 +1,23 @@
 FROM debian:bookworm-slim
 
-
-ARG OPENRESTY_VERSION=1.25.3.2
+ARG OPENRESTY_VERSION=1.31.8.1
 ENV OPENRESTY_PREFIX=/opt/openresty
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential curl wget ca-certificates \
-        libpcre3-dev libssl-dev zlib1g-dev libreadline-dev libncurses-dev perl \
+        libpcre2-dev libssl-dev zlib1g-dev libreadline-dev libncurses-dev perl \
     && mkdir -p /root/ngx_openresty \
     && cd /root/ngx_openresty \
-    # ปรับมาใช้ ngx_cache_purge ตัวที่รองรับ Nginx Core เวอร์ชันใหม่ๆ ได้สมบูรณ์ขึ้น
-    && wget -O ngx_cache_purge.tar.gz https://github.com/nginx-modules/ngx_cache_purge/archive/refs/tags/2.5.1.tar.gz \
+    # ดึง ngx_cache_purge ตัวอัปเดตใหม่สุดเพื่อป้องกัน compile error กับ NGINX 1.31.x 
+
+    && wget -O ngx_cache_purge.tar.gz https://github.com/nginx-modules/ngx_cache_purge/archive/refs/tags/2.5.3.tar.gz \
     && wget -O openresty.tar.gz https://openresty.org/download/openresty-${OPENRESTY_VERSION}.tar.gz \
     && tar -zxvf ngx_cache_purge.tar.gz \
     && tar -xzvf openresty.tar.gz \
     && cd openresty-${OPENRESTY_VERSION} \
     && ./configure \
         --prefix=$OPENRESTY_PREFIX \
-        --add-module=/root/ngx_openresty/ngx_cache_purge-2.5.1 \
+        --add-module=/root/ngx_openresty/ngx_cache_purge-2.5.3 \
         --with-luajit \
         --with-pcre-jit \
         --with-http_stub_status_module \
