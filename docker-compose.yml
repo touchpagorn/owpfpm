@@ -1,7 +1,6 @@
 services:
   web:
-    build:
-      context: ./openresty
+    image: openresty/openresty:1.31.8.1-bookworm
     container_name: web
     restart: "on-failure:5"
     security_opt:
@@ -25,11 +24,11 @@ services:
       - "443:443"
     volumes:
       - ./html:/var/www/html
-      - ./config/ssl/certificate.crt:/opt/openresty/nginx/conf/ssl/certificate.crt:ro
-      - ./config/ssl/private.key:/opt/openresty/nginx/conf/ssl/private.key:ro
-      - ./openresty/config/nginx.conf:/opt/openresty/nginx/conf/nginx.conf:ro
-      - ./openresty/config/owpfpm:/opt/openresty/nginx/conf/owpfpm:ro
-      - ./logs/openresty:/opt/openresty/nginx/logs
+      - ./config/ssl/certificate.crt:/usr/local/openresty/nginx/conf/ssl/certificate.crt:ro
+      - ./config/ssl/private.key:/usr/local/openresty/nginx/conf/ssl/private.key:ro
+      - ./openresty/config/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf:ro
+      - ./openresty/config/owpfpm:/usr/local/openresty/nginx/conf/owpfpm:ro
+      - ./logs/openresty:/usr/local/openresty/nginx/logs
 
     depends_on:
       - php-fpm
