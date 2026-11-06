@@ -28,7 +28,7 @@ services:
       - ./config/ssl/private.key:/usr/local/openresty/nginx/conf/ssl/private.key:ro
       - ./openresty/config/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf:ro
       - ./openresty/config/owpfpm:/usr/local/openresty/nginx/conf/owpfpm:ro
-      - ./logs/openresty:/usr/local/openresty/nginx/logs
+      - ./logs/openresty:/usr/local/openresty/nginx/conf/logs
 
     depends_on:
       - php-fpm
