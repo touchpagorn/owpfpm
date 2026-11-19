@@ -2,6 +2,96 @@
 
 การเปลี่ยนแปลงที่สำคัญทั้งหมดในโปรเจกต์นี้จะถูกบันทึกไว้ในไฟล์นี้
 
+## [Web Server / php-fpm / Database] - 2026-11-19
+
+### ⚠️ Breaking Change: เปลี่ยนจาก Build OpenResty เองมาใช้ Official Image
+- **เลิก build OpenResty จาก source**: ลบ `openresty/Dockerfile` (เดิม build จาก `debian:bookworm-slim` + compile OpenResty `1.31.8.1` พร้อมโมดูล `ngx_cache_purge`) แล้วเปลี่ยน service `web` ใน `docker-compose.yml` ไปใช้ `openresty/openresty:1.31.8.1-bookworm` จาก Docker Hub แทน
+  - ลดเวลา build และไม่ต้องติดตั้ง toolchain (`build-essential`, `perl`, ฯลฯ) อีกต่อไป
+  - ได้รับ security patch ของ base image ตามรอบ release ของ OpenResty โดยตรง
+- **เปลี่ยน prefix ของ OpenResty** จาก `/opt/openresty` เป็น `/usr/local/openresty` (ค่ามาตรฐานของ official image) ส่งผลกับ:
+  - volume mount ทั้งหมดของ service `web` ใน `docker-compose.yml` (SSL cert/key, `nginx.conf`, โฟลเดอร์ `owpfpm`, logs)
+  - `ssl_certificate` / `ssl_certificate_key` ใน `openresty/config/owpfpm/ssl_common.conf` และ `ssl_enabled.conf`
+  - `include` และ `lua_package_path` ใน `openresty/config/nginx.conf.template` (และไฟล์ `nginx.conf` ที่ generate แล้วในเครื่อง)
+- **โมดูล `ngx_cache_purge` ไม่มีใน official image แล้ว**: ถ้ามีการใช้ `fastcgi_cache_purge` / `proxy_cache_purge` หรือปลั๊กอิน WordPress ที่ purge cache ผ่าน nginx (เช่น Nginx Helper แบบ purge URL) จะใช้งานไม่ได้ (คอนฟิกใน repo ปัจจุบันไม่ได้ใช้)
+- **`build.sh`** เปลี่ยนจาก `docker compose build --no-cache web` เป็น `docker compose pull web`
+- `nginx.conf` ไม่ได้ถูก `COPY` เข้า image แล้ว ต้อง mount ผ่าน volume เท่านั้น (ตั้งไว้แล้วใน `docker-compose.yml`)
+
+### การอัปเดตเวอร์ชัน
+- **OpenResty**: `1.25.3.2` → `1.31.8.1` (`ngx_cache_purge` `2.5.1` → `2.5.3` และ `libpcre3-dev` → `libpcre2-dev` ก่อนย้ายไปใช้ official image)
+- **PHP-FPM**: `php:8.3-fpm-alpine` → `php:8.3.36-fpm-alpine` (pin เวอร์ชันเพื่อแก้ช่องโหว่ PHP2Shell)
+- **MariaDB**: `11.8.2` → `11.8.9`
+
+### ความปลอดภัย
+- **`php.ini`**: เพิ่ม `session.upload_progress.enabled = 0` เพื่อลดความเสี่ยงจาก CVE-2026-115560 / PHP2Shell
+- **`nginx.conf.template`**: comment บรรทัด `location = /wp-admin/install.php { deny all; }` ไว้ เพื่อให้รันตัวติดตั้ง WordPress ได้ — **หลังติดตั้งเสร็จต้องเอา comment ออก** เพื่อป้องกันการติดตั้งซ้ำ
+
+### ขั้นตอน Migration (Build เอง → Official OpenResty Image)
+
+> **คำเตือน:** ห้ามใช้ `build.sh` กับเครื่องที่มีข้อมูลจริง เพราะสคริปต์รัน `docker compose down --volumes` และ `docker system prune --all --volumes` ซึ่งจะ **ลบ volume `mariadb_data` และ `redis_data` ทิ้งทั้งหมด** ให้ใช้ขั้นตอนด้านล่างแทน ซึ่งจะ restart เฉพาะ service `web`
+
+1. **สำรองไฟล์คอนฟิกที่ไม่ได้อยู่ใน git** (ไฟล์เหล่านี้ถูก `.gitignore` ไว้ และ `git pull` จะไม่แก้ให้)
+   ```sh
+   mkdir -p backup/openresty
+   cp openresty/config/nginx.conf backup/openresty/
+   cp openresty/config/owpfpm/security_headers.local.conf backup/openresty/ 2>/dev/null
+   cp -r config/ssl backup/
+   ```
+
+2. **ดึงโค้ดเวอร์ชันใหม่**
+   ```sh
+   git pull
+   ```
+
+3. **อัปเดต path ใน `nginx.conf` ที่ generate ไว้แล้ว** (สร้างจาก template ตอนรัน `install.sh` จึงยังเป็น path เดิม)
+   ```sh
+   sed -i 's#/opt/openresty#/usr/local/openresty#g' \
+       openresty/config/nginx.conf \
+       openresty/config/owpfpm/security_headers.local.conf
+   ```
+   หรือจะ generate ใหม่จาก `nginx.conf.template` ก็ได้ แต่ต้องใส่ค่า domain และ customization เดิมกลับเข้าไปเอง
+
+4. **ตรวจว่าไม่เหลือ path เก่า** — คำสั่งนี้ต้องไม่แสดงผลลัพธ์ใด ๆ
+   ```sh
+   grep -rn "/opt/openresty" openresty/config docker-compose.yml
+   ```
+   ถ้ามีคอนฟิกที่ใช้ `fastcgi_cache_purge` / `proxy_cache_purge` ให้นำออก เพราะ official image ไม่มีโมดูลนี้
+
+5. **หยุดและลบ container/image ตัวเก่าที่ build เอง**
+   ```sh
+   docker compose stop web
+   docker compose rm -f web
+   docker image ls | grep -- -web      # หา image ที่ build เอง (ชื่อปกติคือ <ชื่อโปรเจกต์>-web เช่น owpfpm-web)
+   docker image rm owpfpm-web          # เปลี่ยนชื่อให้ตรงกับผลลัพธ์ด้านบน
+   ```
+
+6. **ดึง official image และเริ่ม service `web` ใหม่** (ไม่กระทบ `php-fpm`, `db`, `redis`)
+   ```sh
+   docker compose pull web
+   docker compose up -d --no-deps web
+   ```
+
+7. **ตรวจสอบหลัง migrate**
+   ```sh
+   docker compose exec web openresty -t      # ตรวจ syntax คอนฟิก
+   docker compose exec web openresty -V      # ดูเวอร์ชันและโมดูลที่ build มา
+   docker compose logs --tail=50 web         # ต้องไม่มี error เรื่อง open() failed / No such file
+   curl -I https://<your-domain>/            # ต้องได้ 200/301/302 และมี security headers
+   ```
+   และทดสอบเข้าหน้า `/wp-admin/` ล็อกอินได้ตามปกติ
+
+8. **ล้างข้อมูลที่ไม่ใช้แล้ว** (ทำหลังยืนยันว่าทุกอย่างทำงานปกติ)
+   ```sh
+   docker image prune -f                     # ลบเฉพาะ dangling image ไม่แตะ volume
+   ```
+
+#### Rollback (กรณีมีปัญหา)
+```sh
+git checkout 621d85b -- docker-compose.yml openresty/ build.sh   # คืนค่า Dockerfile และ path /opt/openresty
+cp backup/openresty/nginx.conf openresty/config/nginx.conf
+docker compose up -d --no-deps --build web
+```
+เมื่อแก้ปัญหาเสร็จแล้วให้คืนไฟล์กลับเป็นเวอร์ชันล่าสุดด้วย `git checkout HEAD -- docker-compose.yml openresty/ build.sh`
+
 ## [ทั่วไป / Web Server / php-fpm] - 2026-07-01
 
 ### การแก้ไขและปรับปรุง Extension ของ PHP
