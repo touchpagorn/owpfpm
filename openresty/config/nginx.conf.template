@@ -35,13 +35,13 @@ http {
     proxy_buffers 4 256k;
     proxy_buffer_size 128k;
     proxy_busy_buffers_size 256k;
-    lua_package_path "/opt/openresty/lualib/?.lua;;";
+    lua_package_path "/usr/local/openresty/lualib/?.lua;;";
 
-    include /opt/openresty/nginx/conf/owpfpm/security_headers.conf;
+    include /usr/local/openresty/nginx/conf/owpfpm/security_headers.conf;
     # Override เฉพาะ deployment นี้ (เช่น 3rd-party script/style/frame เพิ่มเติม)
     # ไฟล์นี้ถูก .gitignore ไว้ - ดู security_headers.local.conf.example
-    include /opt/openresty/nginx/conf/owpfpm/security_headers.local.conf;
-    include /opt/openresty/nginx/conf/owpfpm/ssl_enabled.conf;
+    include /usr/local/openresty/nginx/conf/owpfpm/security_headers.local.conf;
+    include /usr/local/openresty/nginx/conf/owpfpm/ssl_enabled.conf;
 
     # Rate limiting zone for WordPress login and XML-RPC to prevent brute force
     limit_req_zone $binary_remote_addr zone=wp_login:10m rate=2r/s;

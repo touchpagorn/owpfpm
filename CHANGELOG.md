@@ -13,6 +13,7 @@
   - `ssl_certificate` / `ssl_certificate_key` ใน `openresty/config/owpfpm/ssl_common.conf` และ `ssl_enabled.conf`
   - `include` และ `lua_package_path` ใน `openresty/config/nginx.conf.template` (และไฟล์ `nginx.conf` ที่ generate แล้วในเครื่อง)
 - **โมดูล `ngx_cache_purge` ไม่มีใน official image แล้ว**: ถ้ามีการใช้ `fastcgi_cache_purge` / `proxy_cache_purge` หรือปลั๊กอิน WordPress ที่ purge cache ผ่าน nginx (เช่น Nginx Helper แบบ purge URL) จะใช้งานไม่ได้ (คอนฟิกใน repo ปัจจุบันไม่ได้ใช้)
+- **Log ของ OpenResty**: mount `./logs/openresty` ไปที่ `/usr/local/openresty/nginx/logs` (ตรงกับ `logs/access.log` / `logs/error.log` ใน config) ทำให้ไฟล์ log ถูกเขียนลงเครื่อง host เหมือนเดิม และยังส่งออก stdout/stderr ให้ดูผ่าน `docker compose logs web` ได้
 - **`build.sh`** เปลี่ยนจาก `docker compose build --no-cache web` เป็น `docker compose pull web`
 - `nginx.conf` ไม่ได้ถูก `COPY` เข้า image แล้ว ต้อง mount ผ่าน volume เท่านั้น (ตั้งไว้แล้วใน `docker-compose.yml`)
 
@@ -88,6 +89,7 @@
 ```sh
 git checkout 621d85b -- docker-compose.yml openresty/ build.sh   # คืนค่า Dockerfile และ path /opt/openresty
 cp backup/openresty/nginx.conf openresty/config/nginx.conf
+cp backup/openresty/security_headers.local.conf openresty/config/owpfpm/ 2>/dev/null
 docker compose up -d --no-deps --build web
 ```
 เมื่อแก้ปัญหาเสร็จแล้วให้คืนไฟล์กลับเป็นเวอร์ชันล่าสุดด้วย `git checkout HEAD -- docker-compose.yml openresty/ build.sh`
