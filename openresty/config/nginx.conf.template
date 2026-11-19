@@ -168,7 +168,8 @@ http {
             fastcgi_max_temp_file_size 0;
         }
         location = /xmlrpc.php {deny all;}
-        location = /wp-admin/install.php { deny all; }
+#       ถ้า Install แล้ว remove comment block การโดน install ซ้ำ
+#        location = /wp-admin/install.php { deny all; } 
 
         error_page   403  /error/403.html;
 
