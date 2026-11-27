@@ -1,6 +1,6 @@
 services:
   web:
-    image: openresty/openresty:1.31.8.1-bookworm
+    image: openresty/openresty:1.31.9.1-bookworm
     container_name: web
     restart: "on-failure:5"
     security_opt:
